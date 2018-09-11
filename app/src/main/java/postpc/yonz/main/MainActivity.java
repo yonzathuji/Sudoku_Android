@@ -7,14 +7,25 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
-import ocr.OcrManager;
+import org.opencv.android.OpenCVLoader;
+
+
 
 public class MainActivity extends AppCompatActivity {
+
+    static{ System.loadLibrary("opencv_java3"); }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!OpenCVLoader.initDebug()) {
+            Log.e(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), not working.");
+        } else {
+            Log.d(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), working.");
+        }
 
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this,
@@ -40,10 +51,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
-            OcrManager ocrManager = new OcrManager();
-            ocrManager.initApi();
-
-            Intent myIntent = new Intent(this, BoardPlayActivity.class);
+            Intent myIntent = new Intent(this, CameraActivity.class);
             startActivity(myIntent);
         }
 

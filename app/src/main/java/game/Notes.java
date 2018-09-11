@@ -22,6 +22,8 @@ public class Notes implements Iterable<Integer>{
         values.clear();
     }
 
+    int size() { return values.size(); }
+
     @NonNull
     @Override
     public Iterator<Integer> iterator() {

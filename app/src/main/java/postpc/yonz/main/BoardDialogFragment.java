@@ -8,11 +8,13 @@ import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 
-public class BoardDialogFragment extends Fragment implements View.OnClickListener {
+public class BoardDialogFragment extends Fragment implements View.OnClickListener, PostClick {
 
+    View view;
     Button input1, input2, input3,
             input4, input5, input6,
             input7, input8, input9;
@@ -24,7 +26,7 @@ public class BoardDialogFragment extends Fragment implements View.OnClickListene
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.board_dialog_layout, container, false);
+        view = inflater.inflate(R.layout.board_dialog_layout, container, false);
         initInputButtons(view);
 
         deleteButton = view.findViewById(R.id.delete_button);
@@ -97,6 +99,13 @@ public class BoardDialogFragment extends Fragment implements View.OnClickListene
         }
     }
 
+    @Override
+    public void onPostClick(int id, boolean result) {
+        if (!result){
+            view.findViewById(id).startAnimation(AnimationUtils.loadAnimation(getContext(),
+                    R.anim.wobble));
+        }
+    }
 
     InputListener activityCommander;
 

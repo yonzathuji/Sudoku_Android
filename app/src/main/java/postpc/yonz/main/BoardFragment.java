@@ -23,16 +23,16 @@ public class BoardFragment extends Fragment {
         return view;
     }
 
-    void insertValue(int value){
-        boardView.insertValue(value);
+    boolean insertValue(int value){
+        return boardView.insertValue(value);
     }
 
-    void deleteValue() {
-        boardView.deleteValue();
+    boolean deleteValue() {
+        return boardView.deleteValue();
     }
 
-    void insertNoteValue(int noteValue) {
-        boardView.insertNoteValue(noteValue);
+    boolean insertNoteValue(int noteValue) {
+        return boardView.insertNoteValue(noteValue);
     }
 
     void hint(){
@@ -43,8 +43,12 @@ public class BoardFragment extends Fragment {
         boardView.solve();
     }
 
-    void undo(){
-        boardView.undo();
+    boolean undo(){
+        return boardView.undo();
+    }
+
+    boolean unTouchView(){
+        return boardView.unTouchView();
     }
 
 }

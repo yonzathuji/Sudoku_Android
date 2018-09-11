@@ -4,10 +4,9 @@ import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.Toast;
 
 public class BoardPlayActivity extends AppCompatActivity implements BoardDialogFragment.InputListener,
-        MenuFragment.InputListener{
+        BoardMenuFragment.InputListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,7 +19,14 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null){
-            boardFragment.deleteValue();
+            if (!boardFragment.deleteValue()){
+                BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
+                        findFragmentById(R.id.board_dialog_fragment);
+
+                if (boardDialogFragment != null){
+                    boardDialogFragment.onPostClick(R.id.delete_button, false);
+                }
+            }
         }
     }
 
@@ -29,7 +35,14 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null){
-            boardFragment.insertValue(value);
+            if (!boardFragment.insertValue(value)){
+                BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
+                        findFragmentById(R.id.board_dialog_fragment);
+
+                if (boardDialogFragment != null){
+                    boardDialogFragment.onPostClick(R.id.value_button, false);
+                }
+            }
         }
     }
 
@@ -38,7 +51,14 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null){
-            boardFragment.insertNoteValue(noteValue);
+            if (!boardFragment.insertNoteValue(noteValue)){
+                BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
+                        findFragmentById(R.id.board_dialog_fragment);
+
+                if (boardDialogFragment != null){
+                    boardDialogFragment.onPostClick(R.id.value_button, false);
+                }
+            }
         }
     }
 
@@ -78,7 +98,24 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null){
-            boardFragment.undo();
+            if (!boardFragment.undo()){
+                BoardMenuFragment boardMenuFragment = (BoardMenuFragment)getSupportFragmentManager().
+                        findFragmentById(R.id.menu_fragment);
+
+                if (boardMenuFragment != null){
+                    boardMenuFragment.onPostClick(R.id.undo_button, false);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
+                findFragmentById(R.id.board_fragment);
+        if (!boardFragment.unTouchView()){
+
+            super.onBackPressed();
         }
     }
 }

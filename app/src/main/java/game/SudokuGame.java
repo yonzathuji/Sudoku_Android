@@ -47,24 +47,36 @@ public class SudokuGame implements Serializable{
         grid = copyMatrix(solvedGrid);
     }
 
-    public void setTileValue(Tile t, int value) {
+    public boolean setTileValue(Tile t, int value) {
         if (!isReadOnly(t))
         {
             if (grid[t.y][t.x] == EMPTY_VALUE)
                 fullTilesCount += 1;
             grid[t.y][t.x] = value;
+            return true;
         }
+        return false;
     }
 
     public int getTileValue(int x, int y){
         return grid[y][x];
     }
 
-    public void deleteValue(Tile t){
+    public int getTileValue(Tile t){
+        return grid[t.y][t.x];
+    }
+
+    public boolean deleteValue(Tile t){
+        if(notesGrid[t.y][t.x].size() != 0){
+            clearAllNotes(t);
+            return true;
+        }
         if (!isReadOnly(t) && grid[t.y][t.x] != EMPTY_VALUE){
             fullTilesCount -= 1;
             grid[t.y][t.x] = EMPTY_VALUE;
+            return true;
         }
+        return false;
 
 
     }
@@ -73,8 +85,12 @@ public class SudokuGame implements Serializable{
         return notesGrid[y][x];
     }
 
-    public void setNote(Tile t, int noteValue) {
-        notesGrid[t.y][t.x].addNote(noteValue);
+    public boolean setNote(Tile t, int noteValue) {
+        if (getTileValue(t) == EMPTY_VALUE){
+            notesGrid[t.y][t.x].addNote(noteValue);
+            return true;
+        }
+        return false;
     }
 
     public void clearAllNotes(Tile t){
@@ -122,6 +138,7 @@ public class SudokuGame implements Serializable{
         }
 
         List<Tile> hintedTiles = new ArrayList<>();
+        List<Tile> emptyTiles = new ArrayList<>();
 
         List<Integer>[][] reducedDomainMatrix = new ArcConsistencyGenerator(this)
                 .getReducedDomains();
@@ -130,15 +147,35 @@ public class SudokuGame implements Serializable{
                 if (grid[y][x] == EMPTY_VALUE && reducedDomainMatrix[y][x].size() == 1){
                     hintedTiles.add(new Tile(x,y));
                 }
+                if (grid[y][x] == EMPTY_VALUE){
+                    emptyTiles.add(new Tile(x,y));
+                }
             }
         }
 
-        if (hintedTiles.isEmpty())
-            return null;
+        if (hintedTiles.isEmpty()) {
+            Tile chosenTile = emptyTiles.get(new Random().nextInt(emptyTiles.size()));
+            setTileValue(chosenTile, solvedGrid[chosenTile.y][chosenTile.x]);
+            readOnlyTiles.add(chosenTile);
+            return chosenTile;
+        }
+
         else{
             return hintedTiles.get(new Random().nextInt(hintedTiles.size()));
         }
 
+    }
+
+    public List<Tile> getTilesWithValue(int value){
+        List<Tile> tiles = new ArrayList<>();
+        for (int y = 0; y < 9; y++){
+            for (int x = 0; x < 9; x++){
+                if(grid[y][x] == value){
+                    tiles.add(new Tile(x, y));
+                }
+            }
+        }
+        return tiles;
     }
 
     boolean isTileEmpty(Tile t) {
@@ -276,6 +313,8 @@ public class SudokuGame implements Serializable{
 
         return neighborsIndexes;
     }
+
+
 
     private void init(String gameFileName) {
         File file = new File(gameFileName);

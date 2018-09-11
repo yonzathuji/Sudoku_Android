@@ -14,6 +14,8 @@ public class MainApplication extends Application {
 
     public static MainApplication instance = null;
 
+
+
     @Override
     public void onCreate() {
         super.onCreate();

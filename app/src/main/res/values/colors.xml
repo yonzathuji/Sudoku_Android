@@ -2,11 +2,12 @@
 <resources>
     <color name="colorPrimary"> #3F51B5 </color>
     <color name="colorPrimaryDark"> #303F9F </color>
-    <color name="colorAccent"> #FF4081 </color>
+    <color name="colorAccent">#5040ff</color>
     <color name="white"> #FFFFFF </color>
     <color name="gridBorders"> #000000 </color>
     <color name="gridValue">#5d58ff</color>
     <color name="gridValueReadOnly"> #000000 </color>
+    <color name="gridValueHighlighted">#ff9d00</color>
     <color name="gridNote"> #008619 </color>
     <color name="gridTouchedTile"> #dadada </color>
     <color name="gridWrongTile"> #ff8282 </color>

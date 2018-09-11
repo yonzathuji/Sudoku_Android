@@ -17,13 +17,13 @@
         android:background="@color/white"
         app:srcCompat="@drawable/icon_menu" />
 
-    <gui.SlideDownMenu
+    <gui.SlideMenu
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/slide_menu_button">
 
-    </gui.SlideDownMenu>
+    </gui.SlideMenu>
 
     <ImageButton
         android:id="@+id/slide_menu_button"

@@ -22,9 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="postpc.yonz.main.BoardPlayActivity">
-
-        </activity>
+        <activity android:name="postpc.yonz.main.BoardPlayActivity"/>
+        <activity android:name="postpc.yonz.main.CameraActivity"/>
     </application>
 
 </manifest>
