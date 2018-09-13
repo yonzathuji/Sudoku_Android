@@ -25,7 +25,7 @@ import ocr.PuzzleScanner;
 
 
 //Based on https://developer.android.com/training/camera/photobasics.html
-public class CameraActivity extends Activity{
+public class CameraActivity extends Activity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     String currentPhotoPath;
 
@@ -48,7 +48,7 @@ public class CameraActivity extends Activity{
             Uri photoURI = null;
             if (photoFile != null) {
                 try {
-                    photoURI = FileProvider.getUriForFile(getApplicationContext(), "uk.co.samuelpratt.sudoku.fileprovider", photoFile);
+                    photoURI = FileProvider.getUriForFile(getApplicationContext(), "postpc.yonz.sudoku_capturesolve.provider", photoFile);
                 } catch (Exception ex) {
                     Log.e(null, "An error occurred getting the URI for the image file", ex);
                 }
@@ -65,16 +65,16 @@ public class CameraActivity extends Activity{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            final Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-            processImage(bitmap);
+        if (pictureWasTakenOk(requestCode, resultCode)) {
+            processImage();
         } else {
             cancelAndReturnToMainActivity();
         }
     }
 
-    private void processImage(final Bitmap imageBitmap) {
+    private void processImage() {
         try {
+            Bitmap imageBitmap = getCameraImageFromStorage();
             setImage(imageBitmap);
 
             ImageView imageView = findViewById(R.id.PreviewImageView);
@@ -94,11 +94,25 @@ public class CameraActivity extends Activity{
         imageView.invalidate();
     }
 
+    private Bitmap getCameraImageFromStorage() {
+        Bitmap bitmap = null;
+        try {
+            Thread.sleep(200);
+        } catch (Exception ex) {
+            Log.d(null, "error sleeping waiting for photo to be written");
+        }
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
+        return bitmap;
+    }
+
+
     private void cancelAndReturnToMainActivity() {
         Intent mainActivityIntent = new Intent(this, MainActivity.class);
         startActivity(mainActivityIntent);
     }
 
+    //Todo: need to work out a better way to do this as this is currently pretty nasty!
     void passPuzzleAndReturnToMainActivity(Integer[][] puzzle) {
 
         Bundle bundle = new Bundle();
@@ -106,6 +120,10 @@ public class CameraActivity extends Activity{
         Intent mainActivityIntent = new Intent(this, MainActivity.class);
         mainActivityIntent.putExtras(bundle);
         startActivity(mainActivityIntent);
+    }
+
+    private boolean pictureWasTakenOk(int requestCode, int resultCode) {
+        return requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK;
     }
 
     private File createImageFile() throws IOException {
@@ -136,6 +154,7 @@ class UpdateImageTask extends AsyncTask<Void, Void, Bitmap> {
         this.activityReference = new WeakReference<>(activity);
         this.methodChain = methodChain;
     }
+
 
     @Override
     protected Bitmap doInBackground(Void... voids) {
