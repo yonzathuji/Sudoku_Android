@@ -104,10 +104,11 @@ class PuzzleParser {
         Utils.matToBitmap(squareMat, squareBmp);
 
         tessBaseAPI.setImage(squareBmp);
+
         String textFound = tessBaseAPI.getUTF8Text();
 
         if (textFound == null || textFound.isEmpty())
-            return null;
+            return 0;
 
         Integer result;
 
@@ -126,68 +127,14 @@ class PuzzleParser {
     Integer[][] getPuzzle() throws PuzzleNotFoundException {
         Integer[][] result = new Integer[9][9];
 
-        for (int x = 0; x < PUZZLE_SIZE; x++) {
-            for (int y = 0; y < PUZZLE_SIZE; y++) {
-                result[x][y] = getNumberForPosition(x, y);
+        for (int y = 0; y < PUZZLE_SIZE; y++) {
+            for (int x = 0; x < PUZZLE_SIZE; x++) {
+                result[y][x] = getNumberForPosition(x, y);
             }
         }
         return result;
     }
 
-//    private void setUpTessTwo() throws IOException {
-//        initTrainingDataDir();
-//        copyTrainingDataIfRequired();
-//        initTestTwo();
-//
-//    }
-//
-//    private void initTestTwo() {
-//        tessBaseAPI = new TessBaseAPI();
-//        tessBaseAPI.init(context.getExternalFilesDir(null).getAbsolutePath(), TESS_LANG);
-//        tessBaseAPI.setVariable("tessedit_char_whitelist", "0123456789");
-//    }
-//
-//    private void copyTrainingDataIfRequired() throws IOException {
-//        if (!getTrainingDataFile().exists()) {
-//            copyTrainingFile();
-//        }
-//    }
-//
-//    private void copyTrainingFile() throws IOException {
-//        AssetManager assetManager = context.getAssets();
-//        InputStream instream = assetManager.open(getTrainingDataAssetFileName());
-//        OutputStream outstream = new FileOutputStream(getTrainingDataFile());
-//        byte[] buffer = new byte[1024];
-//        int read;
-//        while ((read = instream.read(buffer)) != -1) {
-//            outstream.write(buffer, 0, read);
-//        }
-//        outstream.flush();
-//        outstream.close();
-//        instream.close();
-//    }
-//
-//    private String getTrainingDataAssetFileName() {
-//
-//        return TESS_DATA_DIR + "/" + TESS_TRAINING_FILE;
-//
-//    }
-//
-//    @SuppressWarnings("ResultOfMethodCallIgnored")
-//    private void initTrainingDataDir() {
-//        File trainingDataDir = getTrainingDataDir();
-//        if (!trainingDataDir.exists())
-//            trainingDataDir.mkdirs();
-//    }
-//
-//    private File getTrainingDataFile() {
-//        return new File(getTrainingDataDir(), TESS_TRAINING_FILE);
-//    }
-//
-//    private File getTrainingDataDir() {
-//        File path = context.getExternalFilesDir(null);
-//        return new File(path, TESS_DATA_DIR);
-//    }
 
     private Mat findLargestBlob(Mat thresholdMat) {
         Mat largestBlobMat = thresholdMat.clone();

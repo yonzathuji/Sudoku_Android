@@ -9,12 +9,15 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import game.SudokuGame;
 import game.Tile;
+import ocr.PuzzleNotFoundException;
+import postpc.yonz.main.Config;
 import postpc.yonz.main.R;
 
 public class BoardView extends View {
@@ -49,13 +52,14 @@ public class BoardView extends View {
 
     private boolean isSolved = false;
 
-    public BoardView(Context context, AttributeSet attrs){
+    public BoardView(Context context, AttributeSet attrs) throws PuzzleNotFoundException{
         super(context, attrs);
 
         setFocusable(true);
         setFocusableInTouchMode(true);
 
-        mSudokuGame = new SudokuGame("/storage/emulated/0/Puzzle.txt");
+        File puzzleFile = new File(context.getExternalFilesDir(null), Config.PUZZLE_FILE_NAME);
+        mSudokuGame = new SudokuGame(puzzleFile.getAbsolutePath());
         new Thread(new Runnable(){
             public void run(){
                 mSudokuGame.generateSolution();  // todo it returns boolean if solvable

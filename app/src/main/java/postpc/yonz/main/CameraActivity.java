@@ -14,10 +14,14 @@ import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -26,8 +30,10 @@ import ocr.PuzzleScanner;
 
 //Based on https://developer.android.com/training/camera/photobasics.html
 public class CameraActivity extends Activity {
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-    String currentPhotoPath;
+    static final int IMAGE_CAPTURE = 1;
+    static final int CROPPED = 2;
+    File photoFile;
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +44,6 @@ public class CameraActivity extends Activity {
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            File photoFile = null;
             try {
                 photoFile = createImageFile();
             } catch (IOException ex) {
@@ -54,7 +59,7 @@ public class CameraActivity extends Activity {
                 }
                 try {
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    startActivityForResult(takePictureIntent, IMAGE_CAPTURE);
                 } catch (Exception ex) {
                     Log.e(null, "An error occurred taking the picture", ex);
                 }
@@ -65,11 +70,27 @@ public class CameraActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (pictureWasTakenOk(requestCode, resultCode)) {
-            processImage();
-        } else {
+
+        if (resultCode  == RESULT_OK)
+        {
+            if (requestCode == IMAGE_CAPTURE){
+                preformCrop();
+            }
+            else if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE){
+                CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                Uri resultUri = result.getUri();
+                photoFile = new File(resultUri.getPath());
+                processImage();
+            }
+        }
+        else{
             cancelAndReturnToMainActivity();
         }
+    }
+
+    private void preformCrop(){
+        CropImage.activity(Uri.fromFile(new File(photoFile.getAbsolutePath())))
+                .start(this);
     }
 
     private void processImage() {
@@ -102,28 +123,24 @@ public class CameraActivity extends Activity {
             Log.d(null, "error sleeping waiting for photo to be written");
         }
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
+        bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath(), bmOptions);
         return bitmap;
     }
 
-
     private void cancelAndReturnToMainActivity() {
-        Intent mainActivityIntent = new Intent(this, MainActivity.class);
-        startActivity(mainActivityIntent);
+        Intent returnIntent = new Intent();
+        setResult(Activity.RESULT_CANCELED, returnIntent);
+        finish();
     }
 
-    //Todo: need to work out a better way to do this as this is currently pretty nasty!
     void passPuzzleAndReturnToMainActivity(Integer[][] puzzle) {
 
         Bundle bundle = new Bundle();
+        Intent returnIntent = new Intent();
         bundle.putSerializable("Puzzle", puzzle);
-        Intent mainActivityIntent = new Intent(this, MainActivity.class);
-        mainActivityIntent.putExtras(bundle);
-        startActivity(mainActivityIntent);
-    }
-
-    private boolean pictureWasTakenOk(int requestCode, int resultCode) {
-        return requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK;
+        returnIntent.putExtras(bundle.deepCopy());
+        setResult(Activity.RESULT_OK, returnIntent);
+        finish();
     }
 
     private File createImageFile() throws IOException {
@@ -131,97 +148,97 @@ public class CameraActivity extends Activity {
         @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
+        return File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
-}
-
-class UpdateImageTask extends AsyncTask<Void, Void, Bitmap> {
-
-    private final WeakReference<ImageView> imageViewReference;
-    private WeakReference<PuzzleScanner> puzzleScannerReference;
-    private String[] methodChain;
-    private WeakReference<CameraActivity> activityReference;
-
-    UpdateImageTask(ImageView imageView, PuzzleScanner puzzleScanner, String[] methodChain, CameraActivity activity) {
-        this.imageViewReference = new WeakReference<>(imageView);
-        this.puzzleScannerReference = new WeakReference<>(puzzleScanner);
-        this.activityReference = new WeakReference<>(activity);
-        this.methodChain = methodChain;
     }
 
+    private static class UpdateImageTask extends AsyncTask<Void, Void, Bitmap> {
 
-    @Override
-    protected Bitmap doInBackground(Void... voids) {
-        Bitmap result = null;
-        Method[] allMethods = puzzleScannerReference.get().getClass().getDeclaredMethods();
-        for (Method m : allMethods) {
-            //String.equals doesn't work in all android versions.
-            //noinspection StringEquality
-            if (m.getName() == methodChain[0]) {
-                try {
-                    result = (Bitmap) m.invoke(puzzleScannerReference.get());
-                } catch (Exception ex) {
-                    Log.e(null, "error calling method", ex);
+        private final WeakReference<ImageView> imageViewReference;
+        private WeakReference<PuzzleScanner> puzzleScannerReference;
+        private String[] methodChain;
+        private WeakReference<CameraActivity> activityReference;
+
+        UpdateImageTask(ImageView imageView, PuzzleScanner puzzleScanner, String[] methodChain, CameraActivity activity) {
+            this.imageViewReference = new WeakReference<>(imageView);
+            this.puzzleScannerReference = new WeakReference<>(puzzleScanner);
+            this.activityReference = new WeakReference<>(activity);
+            this.methodChain = methodChain;
+        }
+
+
+        @Override
+        protected Bitmap doInBackground(Void... voids) {
+            Bitmap result = null;
+            Method[] allMethods = puzzleScannerReference.get().getClass().getDeclaredMethods();
+            for (Method m : allMethods) {
+                //String.equals doesn't work in all android versions.
+                //noinspection StringEquality
+                if (m.getName() == methodChain[0]) {
+                    try {
+                        result = (Bitmap) m.invoke(puzzleScannerReference.get());
+                    } catch (Exception ex) {
+                        Log.e(null, "error calling method", ex);
+                    }
+                    break;
                 }
-                break;
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            updateImage(bitmap);
+            String[] newMethodChain = getNewMethodChain(methodChain);
+            if (noMoreMethodsInChain(newMethodChain)) {
+                parsePuzzleAndControlBackToMainActivity();
+                return;
+            }
+            executeNextStepInMethodChain(newMethodChain);
+        }
+
+        private void parsePuzzleAndControlBackToMainActivity() {
+            Integer[][] puzzle = null;
+            try {
+                puzzle = puzzleScannerReference.get().getPuzzle();
+            } catch (Exception ex) {
+                Log.e(null, "error calling getting puzzle", ex);
+            }
+            activityReference.get().passPuzzleAndReturnToMainActivity(puzzle);
+        }
+
+        private boolean noMoreMethodsInChain(String[] newMethodChain) {
+            return newMethodChain.length == 0;
+        }
+
+        private void updateImage(Bitmap bitmap) {
+            if (bitmap != null) {
+                final ImageView imageView = imageViewReference.get();
+                if (imageView != null) {
+                    imageView.setImageBitmap(bitmap);
+                    imageView.invalidate();
+                }
             }
         }
-        return result;
-    }
 
-    @Override
-    protected void onPostExecute(Bitmap bitmap) {
-        updateImage(bitmap);
-        String[] newMethodChain = getNewMethodChain(methodChain);
-        if (noMoreMethodsInChain(newMethodChain)) {
-            parsePuzzleAndControlBackToMainActivity();
-            return;
+        private void executeNextStepInMethodChain(String[] newMethodChain) {
+            UpdateImageTask chainTask = new UpdateImageTask(this.imageViewReference.get(),
+                    this.puzzleScannerReference.get(), newMethodChain, this.activityReference.get());
+            chainTask.execute();
         }
-        executeNextStepInMethodChain(newMethodChain);
-    }
 
-    private void parsePuzzleAndControlBackToMainActivity() {
-        Integer[][] puzzle = null;
-        try {
-            puzzle = puzzleScannerReference.get().getPuzzle();
-        } catch (Exception ex) {
-            Log.e(null, "error calling getting puzzle", ex);
+        private String[] getNewMethodChain(String[] methodChain) {
+            if (methodChain.length < 2)
+                return new String[0];
+
+            String[] newMethodChain = new String[methodChain.length - 1];
+            System.arraycopy(methodChain, 1, newMethodChain, 0, methodChain.length - 1);
+            return newMethodChain;
         }
-        activityReference.get().passPuzzleAndReturnToMainActivity(puzzle);
-    }
-
-    private boolean noMoreMethodsInChain(String[] newMethodChain) {
-        return newMethodChain.length == 0;
-    }
-
-    private void updateImage(Bitmap bitmap) {
-        if (bitmap != null) {
-            final ImageView imageView = imageViewReference.get();
-            if (imageView != null) {
-                imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
-            }
-        }
-    }
-
-    private void executeNextStepInMethodChain(String[] newMethodChain) {
-        UpdateImageTask chainTask = new UpdateImageTask(this.imageViewReference.get(),
-                this.puzzleScannerReference.get(), newMethodChain, this.activityReference.get());
-        chainTask.execute();
-    }
-
-    private String[] getNewMethodChain(String[] methodChain) {
-        if (methodChain.length < 2)
-            return new String[0];
-
-        String[] newMethodChain = new String[methodChain.length - 1];
-        System.arraycopy(methodChain, 1, newMethodChain, 0, methodChain.length - 1);
-        return newMethodChain;
     }
 }
+
+

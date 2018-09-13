@@ -1,47 +1,98 @@
 package postpc.yonz.main;
 
-import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
 
+import java.io.File;
+import java.io.IOException;
+
+import db.PuzzlesManager;
 
 
 public class MainActivity extends AppCompatActivity {
 
     static{ System.loadLibrary("opencv_java3"); }
 
+    private Integer[][] puzzle;
+    private Button newGameButton, continueButton;
+    private PuzzlesManager puzzlesManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setContentView(R.layout.activity_main);
         if (!OpenCVLoader.initDebug()) {
             Log.e(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), not working.");
         } else {
             Log.d(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), working.");
         }
 
-        Intent intent = new Intent(this, CameraActivity.class);
-        startActivity(intent);
+        puzzlesManager = new PuzzlesManager(this);
 
+        newGameButton = findViewById(R.id.new_game_button);
+        continueButton = findViewById(R.id.continue_button);
 
+        if (puzzlesManager.isPuzzleFileExists()){
+            continueButton.setVisibility(View.VISIBLE);
+        }
+
+        newGameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getPuzzleFromCamera();
+            }
+        });
+        continueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent boardPlayIntent = new Intent(v.getContext(), BoardPlayActivity.class);
+                startActivity(boardPlayIntent);
+            }
+        });
     }
 
-    public static boolean hasPermissions(Context context, String... permissions) {
-        if (context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
+    private void getPuzzleFromCamera(){
+        Intent intent = new Intent(this, CameraActivity.class);
+        startActivityForResult(intent, 1);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                Bundle bundle = data.getExtras();
+                if (bundle != null){
+                    puzzle = (Integer[][]) (bundle.get("Puzzle"));
+                    if(puzzlesManager.createNewPuzzle(puzzle)){
+                        Intent boardPlayIntent = new Intent(this, BoardPlayActivity.class);
+                        startActivity(boardPlayIntent);
+                    }
+                    else{
+                        new AlertDialog.Builder(this)
+                                .setTitle("Error generating puzzle")
+                                .setMessage("Would you like to retry?")
+                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        getPuzzleFromCamera();
+                                    }})
+                                .setNegativeButton(android.R.string.no, null).show();
+                    }
                 }
             }
         }
-        return true;
     }
+
 }
