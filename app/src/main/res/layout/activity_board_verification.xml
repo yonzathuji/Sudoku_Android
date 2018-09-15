@@ -19,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="0.2"
-        android:tag="play"/>
+        android:tag="verify"/>
     <fragment
         android:id="@+id/board_dialog_fragment"
         android:name="postpc.yonz.main.BoardDialogFragment"

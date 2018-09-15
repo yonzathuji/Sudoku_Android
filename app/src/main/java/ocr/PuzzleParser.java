@@ -32,8 +32,7 @@ class PuzzleParser {
 
     private static final int NUMBER_BORDER = 5;
     private static final String TESS_LANG = "eng";
-    private static final String TESS_DATA_DIR = "tessdata";
-    private static final String TESS_TRAINING_FILE = "eng.traineddata";
+
 
     private static final int PUZZLE_SIZE = 9;
 
@@ -97,7 +96,7 @@ class PuzzleParser {
         return new Mat(puzzleMat, rect);
     }
 
-    Integer getNumberForPosition(int x, int y) throws PuzzleNotFoundException {
+    String getNumberForPosition(int x, int y) throws PuzzleNotFoundException {
         Mat squareMat = getMatForPosition(x, y);
 
         Bitmap squareBmp = Bitmap.createBitmap(squareMat.cols(), squareMat.rows(), Bitmap.Config.ARGB_8888);
@@ -108,27 +107,27 @@ class PuzzleParser {
         String textFound = tessBaseAPI.getUTF8Text();
 
         if (textFound == null || textFound.isEmpty())
-            return 0;
+            return "0";
 
         Integer result;
 
         try {
             result = Integer.parseInt(textFound);
         } catch (Exception ex) {
-            return -1;
+            return "?";
         }
 
         if (result < 1 || result > 9)
-            return -1;
+            return "?";
 
-        return result;
+        return String.valueOf(result);
     }
 
-    Integer[][] getPuzzle() throws PuzzleNotFoundException {
-        Integer[][] result = new Integer[9][9];
+    String[][] getPuzzle() throws PuzzleNotFoundException {
+        String[][] result = new String[9][9];
 
-        for (int y = 0; y < PUZZLE_SIZE; y++) {
-            for (int x = 0; x < PUZZLE_SIZE; x++) {
+        for (int y = 0; y < 9; y++) {
+            for (int x = 0; x < 9; x++) {
                 result[y][x] = getNumberForPosition(x, y);
             }
         }

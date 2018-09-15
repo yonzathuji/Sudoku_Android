@@ -3,9 +3,12 @@ package postpc.yonz.main;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.io.File;
 
 import gui.BoardView;
 
@@ -20,11 +23,22 @@ public class BoardFragment extends Fragment {
         View view = inflater.inflate(R.layout.board_layout, container, false);
         boardView = view.findViewById(R.id.boardView);
 
+        boardView.initSudokuGame(getTag().equals("verify"));
+
+        Log.e("BOARD_FRAGMENT", getTag());
         return view;
     }
 
     boolean insertValue(int value){
         return boardView.insertValue(value);
+    }
+
+    void insertReadOnlyValue(int value) {
+        boardView.insertReadOnlyValue(value);
+    }
+
+    void deleteReadOnlyValue() {
+        boardView.deleteReadOnlyValue();
     }
 
     boolean deleteValue() {

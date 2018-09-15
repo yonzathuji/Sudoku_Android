@@ -12,6 +12,18 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_board_play);
+
+        BoardMenuFragment boardMenuFragment = (BoardMenuFragment)getSupportFragmentManager().
+                findFragmentById(R.id.menu_fragment);
+        if (boardMenuFragment != null) {
+            boardMenuFragment.onPlayingState();
+        }
+
+        BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
+                findFragmentById(R.id.board_dialog_fragment);
+        if (boardDialogFragment != null) {
+            boardDialogFragment.onPlayingState();
+        }
     }
 
     @Override
@@ -114,8 +126,15 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if (!boardFragment.unTouchView()){
-
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void completeVerification() {}
+
+    @Override
+    public void returnToMainMenu() {
+        // todo
     }
 }

@@ -24,9 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     static{ System.loadLibrary("opencv_java3"); }
 
-    private Integer[][] puzzle;
     private Button newGameButton, continueButton;
-    private PuzzlesManager puzzlesManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,24 +36,25 @@ public class MainActivity extends AppCompatActivity {
             Log.d(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), working.");
         }
 
-        puzzlesManager = new PuzzlesManager(this);
-
         newGameButton = findViewById(R.id.new_game_button);
         continueButton = findViewById(R.id.continue_button);
 
-        if (puzzlesManager.isPuzzleFileExists()){
+        if (PuzzlesManager.isPuzzleFileExists()){
             continueButton.setVisibility(View.VISIBLE);
         }
 
         newGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                PuzzlesManager.deleteFile();
+                continueButton.setVisibility(View.INVISIBLE);
                 getPuzzleFromCamera();
             }
         });
         continueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 Intent boardPlayIntent = new Intent(v.getContext(), BoardPlayActivity.class);
                 startActivity(boardPlayIntent);
             }
@@ -67,24 +66,24 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, 1);
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
                 Bundle bundle = data.getExtras();
                 if (bundle != null){
-                    puzzle = (Integer[][]) (bundle.get("Puzzle"));
-                    if(puzzlesManager.createNewPuzzle(puzzle)){
-                        Intent boardPlayIntent = new Intent(this, BoardPlayActivity.class);
-                        startActivity(boardPlayIntent);
+                    String[][] puzzle = (String[][]) (bundle.get("Puzzle"));
+                    if(PuzzlesManager.createVerificationBoard(puzzle)){
+                        continueButton.setVisibility(View.VISIBLE);
+
+                        Intent boardVerificationIntent = new Intent(this, BoardVerificationActivity.class);
+                        startActivity(boardVerificationIntent);
                     }
                     else{
                         new AlertDialog.Builder(this)
                                 .setTitle("Error generating puzzle")
                                 .setMessage("Would you like to retry?")
                                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-
                                     public void onClick(DialogInterface dialog, int whichButton) {
                                         getPuzzleFromCamera();
                                     }})

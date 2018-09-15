@@ -12,12 +12,12 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 
-public class BoardDialogFragment extends Fragment implements View.OnClickListener, PostClick {
+public class BoardDialogFragment extends Fragment implements View.OnClickListener, PostClick, FragmentState {
 
     View view;
     Button input1, input2, input3,
-            input4, input5, input6,
-            input7, input8, input9;
+           input4, input5, input6,
+           input7, input8, input9;
     ImageButton deleteButton, valueButton;
     SparseIntArray buttonToValueMap;
     boolean isInsertValue = true; // true for value, false for notes
@@ -108,6 +108,16 @@ public class BoardDialogFragment extends Fragment implements View.OnClickListene
     }
 
     InputListener activityCommander;
+
+    @Override
+    public void onVerificationState() {
+        valueButton.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void onPlayingState() {
+        valueButton.setVisibility(View.VISIBLE);
+    }
 
     interface InputListener {
         void deleteValue();

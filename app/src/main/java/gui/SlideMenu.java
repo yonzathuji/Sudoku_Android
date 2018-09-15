@@ -9,8 +9,6 @@ import postpc.yonz.main.R;
 
 
 public class SlideMenu extends RelativeLayout {
-    private ImageView undoButton;
-    private ImageView solveButton;
 
     public SlideMenu(Context context) {
         super(context);

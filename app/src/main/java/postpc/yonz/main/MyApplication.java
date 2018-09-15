@@ -1,6 +1,7 @@
 package postpc.yonz.main;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
@@ -10,33 +11,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class MainApplication extends Application {
+public class MyApplication extends Application {
 
-    public static MainApplication instance = null;
-
-
+    public static MyApplication instance = null;
+    private static Context context;
 
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
+        MyApplication.context = getApplicationContext();
         copyTessDataForTextRecognizer();
     }
 
     public String getTessDataParentDirectory(){
-        return MainApplication.instance.getExternalFilesDir(null).getAbsolutePath();
+        return MyApplication.instance.getExternalFilesDir(null).getAbsolutePath();
     }
 
     private String tessDataPath(){
-        return MainApplication.instance.getExternalFilesDir(null)+"/tessdata/";
+        return MyApplication.instance.getExternalFilesDir(null)+"/tessdata/";
     }
 
     private void copyTessDataForTextRecognizer() {
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                AssetManager assetManager = MainApplication.instance.getAssets();
-                OutputStream out = null;
+                AssetManager assetManager = MyApplication.instance.getAssets();
+                OutputStream out;
                 try {
                     InputStream in = assetManager.open("eng.traineddata");
                     String tessPath = instance.tessDataPath();
@@ -57,10 +58,14 @@ public class MainApplication extends Application {
                         }
                     }
                 } catch (IOException e) {
-                    Log.e("MainApplication", e.getMessage());
+                    Log.e("MyApplication", e.getMessage());
                 }
             }
         };
         new Thread(run).start();
+    }
+
+    public static Context getAppContext() {
+        return MyApplication.context;
     }
 }

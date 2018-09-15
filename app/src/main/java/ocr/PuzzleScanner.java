@@ -81,7 +81,7 @@ public class PuzzleScanner {
         return convertMatToBitMap(extractedPuzzleMat);
     }
 
-    public Integer[][] getPuzzle() throws IOException, PuzzleNotFoundException {
+    public String[][] getPuzzle() throws IOException, PuzzleNotFoundException {
         return getPuzzleParser().getPuzzle();
     }
 

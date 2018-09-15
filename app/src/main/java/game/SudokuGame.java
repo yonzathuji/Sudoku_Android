@@ -1,13 +1,12 @@
 package game;
 
-import android.util.Log;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Random;
 
+import postpc.yonz.main.PostClick;
 
 
 public class SudokuGame implements Serializable{
@@ -17,16 +16,22 @@ public class SudokuGame implements Serializable{
     private List<Tile> readOnlyTiles;
     static final int EMPTY_VALUE = 0;
     private int fullTilesCount = 0;
+    private List<Tile> unrecognizedTiles;
 
     /**
      * Constructor. gets filename and constructs the board from the file.
-     * @param gameFileName should be in format (------5--\n-----12--\n etc)
+     * @param boardFilePath should be in format (------5--\n-----12--\n etc)
      */
-    public SudokuGame(String gameFileName) {
+    public SudokuGame(String boardFilePath, boolean isVerification) {
         grid = new int[9][9];
         notesGrid = new Notes[9][9];
         readOnlyTiles = new ArrayList<>();
-        init(gameFileName);
+        if (isVerification) {
+            initVerificationGrid(boardFilePath);
+        }
+        else {
+            initPlayingGrid(boardFilePath);
+        }
     }
 
     public boolean generateSolution(){
@@ -58,6 +63,13 @@ public class SudokuGame implements Serializable{
         return false;
     }
 
+    public void setReadOnlyTileValue(Tile t, int value){
+        if (grid[t.y][t.x] == EMPTY_VALUE)
+            fullTilesCount += 1;
+        grid[t.y][t.x] = value;
+        readOnlyTiles.add(new Tile(t));
+    }
+
     public int getTileValue(int x, int y){
         return grid[y][x];
     }
@@ -81,6 +93,15 @@ public class SudokuGame implements Serializable{
 
     }
 
+    public void deleteReadOnlyValue(Tile t){
+        if (grid[t.y][t.x] != EMPTY_VALUE){
+            grid[t.y][t.x] = EMPTY_VALUE;
+            readOnlyTiles.remove(new Tile(t));
+            fullTilesCount -= 1;
+        }
+
+    }
+
     public Notes getNotes(int x, int y){
         return notesGrid[y][x];
     }
@@ -100,7 +121,6 @@ public class SudokuGame implements Serializable{
     public boolean isReadOnly(int x, int y){
         return isReadOnly(new Tile(x, y));
     }
-
 
     public int[][] getGrid(){
         return copyMatrix(this.grid);
@@ -129,6 +149,10 @@ public class SudokuGame implements Serializable{
             }
         }
         return wrongTiles;
+    }
+
+    public List<Tile> getUnrecognizedTiles() {
+        return unrecognizedTiles;
     }
 
     public Tile getHint() {
@@ -314,40 +338,6 @@ public class SudokuGame implements Serializable{
         return neighborsIndexes;
     }
 
-
-
-    private void init(String gameFileName) {
-        File file = new File(gameFileName);
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            int rowIndex = 0;
-            while ((line = br.readLine()) != null) {
-                int colIndex = 0;
-                for (char charValue : line.toCharArray()) {
-                    int value = EMPTY_VALUE;
-                    if (charValue != '-') {
-                        readOnlyTiles.add(new Tile(colIndex, rowIndex));
-                        value = charValue - 48;
-                        fullTilesCount += 1;
-                    }
-                    grid[rowIndex][colIndex] = value;
-                    colIndex++;
-                }
-                rowIndex++;
-            }
-
-            for (int y = 0; y < 9; y++){
-                for (int x = 0; x < 9; x++){
-                    notesGrid[y][x] = new Notes();
-                }
-            }
-        }
-        catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
     private Tile getBlockStartIndexes(int x, int y) {
         int xStart = 0, yStart = 0;
         if (3 <= x && x < 6) {
@@ -373,6 +363,74 @@ public class SudokuGame implements Serializable{
             copy[i] = matrix[i].clone();
 
         return copy;
+    }
+
+    private void initPlayingGrid(String boardFilePath) {
+        File file = new File(boardFilePath);
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            int rowIndex = 0;
+            while ((line = br.readLine()) != null) {
+                int colIndex = 0;
+                for (char charValue : line.toCharArray()) {
+                    int value = EMPTY_VALUE;
+                    if (charValue != '0') {
+                        readOnlyTiles.add(new Tile(colIndex, rowIndex));
+                        value = charValue - 48;
+                        fullTilesCount += 1;
+                    }
+                    grid[rowIndex][colIndex] = value;
+                    colIndex++;
+                }
+                rowIndex++;
+            }
+
+            for (int y = 0; y < 9; y++){
+                for (int x = 0; x < 9; x++){
+                    notesGrid[y][x] = new Notes();
+                }
+            }
+        }
+        catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void initVerificationGrid(String boardFilePath){
+        File file = new File(boardFilePath);
+        unrecognizedTiles = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            int rowIndex = 0;
+            while ((line = br.readLine()) != null) {
+                int colIndex = 0;
+                for (char charValue : line.toCharArray()) {
+                    int value = EMPTY_VALUE;
+                    if (charValue == '?'){
+                        unrecognizedTiles.add(new Tile(colIndex, rowIndex));
+                    }
+                    else if(charValue != '0'){
+                        readOnlyTiles.add(new Tile(colIndex, rowIndex));
+                        value = charValue - 48;
+                        fullTilesCount += 1;
+                    }
+                    grid[rowIndex][colIndex] = value;
+                    colIndex++;
+                }
+                rowIndex++;
+            }
+
+            for (int y = 0; y < 9; y++){
+                for (int x = 0; x < 9; x++){
+                    notesGrid[y][x] = new Notes();
+                }
+            }
+        }
+        catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
 

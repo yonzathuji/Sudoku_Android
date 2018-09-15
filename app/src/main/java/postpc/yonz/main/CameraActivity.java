@@ -110,21 +110,19 @@ public class CameraActivity extends Activity {
     }
 
     private void setImage(Bitmap imageBitmap) throws Exception {
-        ImageView imageView = (ImageView) findViewById(R.id.PreviewImageView);
+        ImageView imageView = findViewById(R.id.PreviewImageView);
         imageView.setImageBitmap(imageBitmap);
         imageView.invalidate();
     }
 
     private Bitmap getCameraImageFromStorage() {
-        Bitmap bitmap = null;
         try {
             Thread.sleep(200);
         } catch (Exception ex) {
             Log.d(null, "error sleeping waiting for photo to be written");
         }
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath(), bmOptions);
-        return bitmap;
+        return BitmapFactory.decodeFile(photoFile.getAbsolutePath(), bmOptions);
     }
 
     private void cancelAndReturnToMainActivity() {
@@ -133,7 +131,7 @@ public class CameraActivity extends Activity {
         finish();
     }
 
-    void passPuzzleAndReturnToMainActivity(Integer[][] puzzle) {
+    void passPuzzleAndReturnToMainActivity(String[][] puzzle) {
 
         Bundle bundle = new Bundle();
         Intent returnIntent = new Intent();
@@ -201,7 +199,7 @@ public class CameraActivity extends Activity {
         }
 
         private void parsePuzzleAndControlBackToMainActivity() {
-            Integer[][] puzzle = null;
+            String[][] puzzle = null;
             try {
                 puzzle = puzzleScannerReference.get().getPuzzle();
             } catch (Exception ex) {

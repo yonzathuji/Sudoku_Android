@@ -10,22 +10,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
 
-public class BoardMenuFragment extends Fragment implements View.OnClickListener, PostClick{
+public class BoardMenuFragment extends Fragment implements View.OnClickListener, PostClick, FragmentState{
 
     View view;
-    private ImageButton hintButton, slideMenuButton, solveButton, undoButton;
+    private ImageButton hintButton, slideMenuButton, solveButton, undoButton, mainMenuButton, verifiedButton;
     private Animation slideRightAnimation, slideLeftAnimation;
     private RelativeLayout slideRightLayout;
     private boolean isMenuOpen = false;
     InputListener activityCommander;
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.menu_layout, container, false);
+        view = inflater.inflate(R.layout.board_menu_layout, container, false);
+
+        mainMenuButton = view.findViewById(R.id.main_menu_button);
+        mainMenuButton.setOnClickListener(this);
+
+        verifiedButton = view.findViewById(R.id.verified_button);
+        verifiedButton.setOnClickListener(this);
 
         slideRightAnimation = AnimationUtils.loadAnimation(getContext().getApplicationContext(),
                 R.anim.slide_right);
@@ -50,7 +55,6 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
         return view;
     }
 
-
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -71,6 +75,14 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
 
             case R.id.undo_button:
                 activityCommander.undo();
+                break;
+
+            case R.id.main_menu_button:
+                activityCommander.returnToMainMenu();
+                break;
+
+            case R.id.verified_button:
+                activityCommander.completeVerification();
                 break;
         }
     }
@@ -106,10 +118,26 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
         }
     }
 
+    @Override
+    public void onVerificationState() {
+        hintButton.setVisibility(View.INVISIBLE);
+        slideMenuButton.setVisibility(View.INVISIBLE);
+        verifiedButton.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onPlayingState() {
+        hintButton.setVisibility(View.VISIBLE);
+        slideMenuButton.setVisibility(View.VISIBLE);
+        verifiedButton.setVisibility(View.INVISIBLE);
+    }
+
     interface InputListener {
         void hint();
         void undo();
         void solve();
+        void completeVerification();
+        void returnToMainMenu();
     }
 
     @Override
