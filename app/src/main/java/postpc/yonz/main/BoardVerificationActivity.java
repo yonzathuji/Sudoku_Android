@@ -1,7 +1,14 @@
 package postpc.yonz.main;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+
+import db.GameAction;
+import db.PuzzlesManager;
 
 
 public class BoardVerificationActivity extends AppCompatActivity implements BoardDialogFragment.InputListener,
@@ -12,7 +19,7 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
         setContentView(R.layout.activity_board_verification);
 
         BoardMenuFragment boardMenuFragment = (BoardMenuFragment)getSupportFragmentManager().
-                findFragmentById(R.id.menu_fragment);
+                findFragmentById(R.id.board_menu_fragment);
         if (boardMenuFragment != null) {
             boardMenuFragment.onVerificationState();
         }
@@ -38,7 +45,8 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null) {
-            boardFragment.deleteReadOnlyValue();
+            GameAction action = boardFragment.deleteReadOnlyValue();
+            PuzzlesManager.editVerificationFile(action);
         }
     }
 
@@ -47,7 +55,8 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null) {
-            boardFragment.insertReadOnlyValue(value);
+            GameAction action = boardFragment.insertReadOnlyValue(value);
+            PuzzlesManager.editVerificationFile(action);
         }
     }
 
@@ -56,7 +65,28 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
 
     @Override
     public void completeVerification() {
-        // todo
+        String dialogMessage;
+        if (PuzzlesManager.isVerificationComplete()) {
+            dialogMessage = "Complete Verification?";
+        }
+        else {
+            dialogMessage = "There are still tiles with uncertain values. Continuing will reset them";
+        }
+
+        final Context context = this;
+
+        new AlertDialog.Builder(this)
+                .setTitle("Complete Verification")
+                .setMessage(dialogMessage)
+                .setIcon(R.drawable.icon_verified)
+                .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        PuzzlesManager.completeVerification();
+                        Intent boardVerificationIntent = new Intent(context, BoardPlayActivity.class);
+                        startActivity(boardVerificationIntent);
+                    }})
+                .setNegativeButton("Cancel", null).show();
     }
 
     @Override

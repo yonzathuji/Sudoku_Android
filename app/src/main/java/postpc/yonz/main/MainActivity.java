@@ -1,7 +1,6 @@
 package postpc.yonz.main;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
@@ -10,12 +9,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
-
-import java.io.File;
-import java.io.IOException;
 
 import db.PuzzlesManager;
 
@@ -39,14 +34,14 @@ public class MainActivity extends AppCompatActivity {
         newGameButton = findViewById(R.id.new_game_button);
         continueButton = findViewById(R.id.continue_button);
 
-        if (PuzzlesManager.isPuzzleFileExists()){
+        if (PuzzlesManager.isPlayingPuzzleFileExists()){
             continueButton.setVisibility(View.VISIBLE);
         }
 
         newGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PuzzlesManager.deleteFile();
+                PuzzlesManager.resetFiles();
                 continueButton.setVisibility(View.INVISIBLE);
                 getPuzzleFromCamera();
             }
@@ -76,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
                     if(PuzzlesManager.createVerificationBoard(puzzle)){
                         continueButton.setVisibility(View.VISIBLE);
 
-                        Intent boardVerificationIntent = new Intent(this, BoardVerificationActivity.class);
+                        Intent boardVerificationIntent = new Intent(this, BoardVerificationActivity.class); 
                         startActivity(boardVerificationIntent);
                     }
                     else{

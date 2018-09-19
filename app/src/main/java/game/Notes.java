@@ -10,15 +10,15 @@ public class Notes implements Iterable<Integer>{
 
     private Set<Integer> values;
 
-    Notes(){
+    Notes() {
         values = new ArraySet<>();
     }
 
-    void addNote(int note){
+    void addNote(int note) {
         values.add(note);
     }
 
-    void deleteAllNotes(){
+    void deleteAllNotes() {
         values.clear();
     }
 

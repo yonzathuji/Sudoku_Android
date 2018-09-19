@@ -7,21 +7,21 @@ import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import db.GameAction;
 import game.SudokuGame;
 import game.Tile;
 import ocr.PuzzleNotFoundException;
-import db.Config;
 import postpc.yonz.main.R;
 
 public class BoardView extends View {
 
-    private Context context;
+
 
     public static final int DEFAULT_BOARD_SIZE = 100;
 
@@ -29,10 +29,11 @@ public class BoardView extends View {
     private float mCellHeight;
 
     private SudokuGame mSudokuGame;
-    private Stack<Action> actionsStack;
     private Tile mTouchedTile;
     private Tile mHintedTile;
     private List<Tile> mWrongTiles;
+    private List<Tile> mUnrecognizedTiles;
+    private Stack<GameAction> actionsStack;
 
     private Paint mLinePaint;
     private Paint mSectorLinePaint;
@@ -52,16 +53,14 @@ public class BoardView extends View {
     private int mTouchedValue;
 
     private boolean isSolved = false;
+    private boolean isGeneratingSolution = true;
+    private boolean isVerification = true;
 
     public BoardView(Context context, AttributeSet attrs) throws PuzzleNotFoundException{
         super(context, attrs);
 
-        this.context = context;
-
         setFocusable(true);
         setFocusableInTouchMode(true);
-
-        //initSudokuGame(false); // todo how do i pass values to view?
 
         mWrongTiles = new ArrayList<>();
         actionsStack = new Stack<>();
@@ -83,7 +82,6 @@ public class BoardView extends View {
         mCellValueHighlighted.setTypeface(Typeface.create("Arial", Typeface.BOLD));
         mCellNotePaint.setAntiAlias(true);
 
-
         mLinePaint.setColor(getResources().getColor(R.color.gridBorders));
 
         mSectorLinePaint.setColor(getResources().getColor(R.color.gridBorders));
@@ -101,18 +99,24 @@ public class BoardView extends View {
         context.obtainStyledAttributes(attrs, R.styleable.BoardView).recycle();
     }
 
+    /**
+     * Initialize the game object and the grid. If in verification mode it will only create the board,
+     * otherwise it will generate a solution.
+     * @param isForVerification true if this is the board verification mode.
+     */
     public void initSudokuGame(boolean isForVerification) {
+        isVerification = isForVerification;
         if (isForVerification) {
-            File puzzleFile = new File(context.getExternalFilesDir(null), Config.VERIFICATION_PUZZLE);
-            mSudokuGame = new SudokuGame(puzzleFile.getAbsolutePath(), true);
+            mSudokuGame = new SudokuGame(true);
+            mUnrecognizedTiles = mSudokuGame.getUnrecognizedTiles();
+            isGeneratingSolution = false;
         }
         else {
-            File puzzleFile = new File(context.getExternalFilesDir(null), Config.PLAYING_PUZZLE);
-            mSudokuGame = new SudokuGame(puzzleFile.getAbsolutePath(), false);
+            mSudokuGame = new SudokuGame(false);
             new Thread(new Runnable() {
                 public void run() {
-                    mSudokuGame.generateSolution();  // todo it returns boolean if solvable
-                    isSolved = true;
+                    isSolved = mSudokuGame.generateSolution();
+                    isGeneratingSolution = false;
                 }
             }).start();
         }
@@ -169,11 +173,11 @@ public class BoardView extends View {
         mCellValueReadonlyPaint.setTextSize(cellTextSize);
         mCellValueHighlighted.setTextSize(cellTextSize);
         mCellNotePaint.setTextSize(mCellHeight / 3.0f);
-        // compute offsets in each cell to center the rendered number
+
         mNumberLeft = (int) ((mCellWidth - mCellValuePaint.measureText("9")) / 2);
         mNumberTop = (int) ((mCellHeight - mCellValuePaint.getTextSize()) / 2);
 
-        // add some offset because in some resolutions notes are cut-off in the top
+
         mNoteTop = mCellHeight / 50.0f;
 
         int sizeInPx = width < height ? width : height;
@@ -193,7 +197,8 @@ public class BoardView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        //while (!isSolved) {}
+        // if on playing mode, wait for a solution to be generated before displaying the board
+        while (!isVerification && isGeneratingSolution) {}
 
         int width = getWidth() - getPaddingRight();
         int height = getHeight() - getPaddingBottom();
@@ -201,7 +206,6 @@ public class BoardView extends View {
         int paddingLeft = getPaddingLeft();
         int paddingTop = getPaddingTop();
 
-        // draw cells
         int cellLeft, cellTop;
         if (mSudokuGame != null) {
 
@@ -209,6 +213,7 @@ public class BoardView extends View {
             float noteAscent = mCellNotePaint.ascent();
             float noteWidth = mCellWidth / 3f;
 
+            // color the touched tile, its entire row and its entire column.
             if (mTouchedTile != null) {
                 cellLeft = Math.round(mTouchedTile.x * mCellWidth) + paddingLeft;
                 cellTop = Math.round(mTouchedTile.y * mCellHeight) + paddingTop;
@@ -222,6 +227,7 @@ public class BoardView extends View {
                         mBackgroundColorTouched);
             }
 
+            // color the hinted tile (playing mode)
             if (mHintedTile != null) {
                 cellLeft = Math.round(mHintedTile.x * mCellWidth) + paddingLeft;
                 cellTop = Math.round(mHintedTile.y * mCellHeight) + paddingTop;
@@ -231,6 +237,7 @@ public class BoardView extends View {
                         mBackgroundColorHinted);
             }
 
+            // color the wrong tiles (playing mode)
             for (Tile wrongTile : mWrongTiles) {
                 cellLeft = Math.round(wrongTile.x * mCellWidth) + paddingLeft;
                 cellTop = Math.round(wrongTile.y * mCellHeight) + paddingTop;
@@ -240,9 +247,10 @@ public class BoardView extends View {
                         mBackgroundColorWrong);
             }
 
-            List<Tile> unrecognizedTiles = mSudokuGame.getUnrecognizedTiles();
-            if(unrecognizedTiles != null){
-                for (Tile unrecognizedTile : unrecognizedTiles) {
+
+            // color the unrecognized tiles (verification mode)
+            if(mUnrecognizedTiles != null) {
+                for (Tile unrecognizedTile : mUnrecognizedTiles) {
                     cellLeft = Math.round(unrecognizedTile.x * mCellWidth) + paddingLeft;
                     cellTop = Math.round(unrecognizedTile.y * mCellHeight) + paddingTop;
                     canvas.drawRect(
@@ -273,13 +281,14 @@ public class BoardView extends View {
                                 cellTop + mNumberTop - numberAscent,
                                 cellValuePaint);
                     }
-                    else if(unrecognizedTiles != null && unrecognizedTiles.contains(new Tile(col, row))) {
+                    else if(mUnrecognizedTiles != null && mUnrecognizedTiles.contains(new Tile(col, row))) {
+                        // unrecognized tiles in verification mode
                         canvas.drawText("?",
                                 cellLeft + mNumberLeft,
                                 cellTop + mNumberTop - numberAscent,
                                 mCellValueReadonlyPaint);
                     }
-                    else {
+                    else { // draw cell notes
                         for (int number : mSudokuGame.getNotes(col, row)) {
                             int n = number - 1;
                             int c = n % 3;
@@ -337,7 +346,7 @@ public class BoardView extends View {
 
         return super.onTouchEvent(event);
     }
-    
+
     private Tile getTileAtPosition(int x, int y) {
         // take into account padding
         int lx = x - getPaddingLeft();
@@ -354,19 +363,22 @@ public class BoardView extends View {
         }
     }
 
-    public boolean insertValue(int value) {
-        boolean result = true;
+    /**
+     * Attempts to insert a given value to the touched tile.
+     * @param value the value to be inserted
+     * @return a GameAction object if the insertion was successful. null otherwise.
+     */
+    public GameAction insertValue(int value) {
+        GameAction action = null;
         if (mTouchedTile != null) {
-            Action action = new Action(mTouchedTile,
-                    mSudokuGame.getTileValue(mTouchedTile));
-            if (!mSudokuGame.setTileValue(mTouchedTile, value)) {
-                result = false;
-            }
-            else {
-                if (!(!actionsStack.isEmpty() && action.equals(actionsStack.peek()))) {
-                    actionsStack.push(action);
-                }
+            int prevValue = mSudokuGame.getTileValue(mTouchedTile);
+            action = new GameAction(mTouchedTile,
+                    value, false);
+            if (mSudokuGame.setTileValue(mTouchedTile, value)) {
                 mWrongTiles.remove(mTouchedTile);
+                if (!(!actionsStack.isEmpty() && action.equals(actionsStack.peek()))) {
+                    actionsStack.push(new GameAction(mTouchedTile, prevValue, false));
+                }
                 invalidate();
             }
         }
@@ -374,45 +386,59 @@ public class BoardView extends View {
             mTouchedValue = value;
             invalidate();
         }
-        return result;
-    }
-    
-    public void insertReadOnlyValue(int value) {
-        if (mTouchedTile != null) {
-            mSudokuGame.setReadOnlyTileValue(mTouchedTile, value);
-            invalidate();
-        }
+        return action;
     }
 
-    public boolean deleteValue() {
-        boolean result = true;
+    /**
+     * Inserts a value to the touched tile even if it's read-only tile. ONLY USE IN VERIFICATION
+     * @param value the value to be inserted.
+     * @return a GameAction object if the deletion was successful. null otherwise.
+     */
+    public GameAction insertReadOnlyValue(int value) {
         if (mTouchedTile != null) {
-            Action action = new Action(mTouchedTile,
-                    mSudokuGame.getTileValue(mTouchedTile));
-            if (!mSudokuGame.deleteValue(mTouchedTile)) {
-                result = false;
-            }
-            else {
+            mSudokuGame.setReadOnlyTileValue(mTouchedTile, value);
+            mUnrecognizedTiles.remove(mTouchedTile);
+            invalidate();
+
+            return new GameAction(mTouchedTile, value, false);
+        }
+        return null;
+    }
+
+    /**
+     * Attempts to delete the value of the touched tile.
+     * @return a GameAction object if the deletion was successful. null otherwise.
+     */
+    public GameAction deleteValue() {
+        GameAction action = null;
+        if (mTouchedTile != null) {
+            action = new GameAction(mTouchedTile,
+                    mSudokuGame.getTileValue(mTouchedTile), false);
+            if (mSudokuGame.deleteValue(mTouchedTile)) {
+                mSudokuGame.clearAllNotes(mTouchedTile);
+                mWrongTiles.remove(mTouchedTile);
                 if (!(!actionsStack.isEmpty() && action.equals(actionsStack.peek()))) {
                     actionsStack.push(action);
                 }
-                mSudokuGame.clearAllNotes(mTouchedTile);
-                mWrongTiles.remove(mTouchedTile);
                 invalidate();
             }
         }
-        else {
-            result = false;
-        }
 
-        return result;
+        return action;
     }
 
-    public void deleteReadOnlyValue(){
+    /**
+     * Deletes the value of the touched tile even if it's read-only tile. ONLY USE IN VERIFICATION
+     * @return a GameAction object if the deletion was successful. null otherwise.
+     */
+    public GameAction deleteReadOnlyValue() {
         if (mTouchedTile != null) {
             mSudokuGame.deleteReadOnlyValue(mTouchedTile);
+            mUnrecognizedTiles.remove(mTouchedTile);
             invalidate();
+            return new GameAction(mTouchedTile, 0, false);
         }
+        return null;
     }
 
     public boolean insertNoteValue(int noteValue) {
@@ -433,45 +459,71 @@ public class BoardView extends View {
         return result;
     }
 
-    public void hint() {
-
-        if (mSudokuGame.isGridCorrect()) {
-            new Thread(new Runnable() {
-                public void run() {
-                    mHintedTile = mSudokuGame.getHint();
-                    invalidate();
-                }
-            }).start();
+    /**
+     * Attempts to display a hint on the board.
+     * @return true if a hint was displayed. false otherwise.
+     */
+    public boolean hint() {
+        if (isSolved) {
+            if (mSudokuGame.isGridCorrect()) {
+                new Thread(new Runnable() {
+                    public void run() {
+                        mHintedTile = mSudokuGame.getHint();
+                        invalidate();
+                    }
+                }).start();
+            }
+            else {
+                mWrongTiles = mSudokuGame.getWrongTiles();
+                invalidate();
+            }
         }
-        else {
+        else { // todo
+            Toast.makeText(getContext(), "Puzzle has no solution", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return mHintedTile != null;
+    }
+
+    /**
+     * Sets the grid to the solved grid if the puzzle is solvable.
+     * @return true if the grid was set to solved. false otherwise.
+     */
+    public boolean solve() {
+        if (isSolved) {
             mWrongTiles = mSudokuGame.getWrongTiles();
+            mSudokuGame.setGridToSolved();
+            actionsStack.clear();
+            mTouchedTile = null;
+            mHintedTile = null;
+            mTouchedValue = 0;
             invalidate();
         }
+        else { // todo
+            Toast.makeText(getContext(), "Puzzle has no solution", Toast.LENGTH_LONG).show();
+        }
+
+        return isSolved;
     }
 
-    public void solve() {
-        mWrongTiles = mSudokuGame.getWrongTiles();
-
-        mSudokuGame.setGridToSolved();
-
-        actionsStack.clear();
-        mTouchedTile = null;
-        mHintedTile = null;
-        mTouchedValue = 0;
-
-        invalidate();
-    }
-
+    /**
+     * Undos the last action.
+     * @return true if undoing was successful. false otherwise.
+     */
     public boolean undo() {
         if (!actionsStack.isEmpty()) {
-            Action lastAction = actionsStack.pop();
-            mSudokuGame.setTileValue(lastAction.t, lastAction.value);
+            GameAction lastAction = actionsStack.pop();
+            mSudokuGame.setTileValue(lastAction.tile, lastAction.value);
             invalidate();
             return true;
         }
         return false;
     }
 
+    /**
+     * Releases the touched tile and the touched value.
+     * @return true if touched tile was released or the touched value was released.
+     */
     public boolean unTouchView() {
         if (mTouchedTile == null && mTouchedValue == 0) {
             return false;
@@ -487,27 +539,5 @@ public class BoardView extends View {
         return true;
     }
 
-    private class Action{
-        Tile t;
-        int value;
-        Action(Tile t, int value) {
-            this.t = new Tile(t);
-            this.value = value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this)
-                return true;
-
-            if (!(obj instanceof Action)) {
-                return false;
-            }
-
-            Action other = (Action)obj;
-
-            return other.t.equals(t) && other.value == value;
-        }
-    }
 
 }

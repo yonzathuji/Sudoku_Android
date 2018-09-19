@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
     android:visibility="gone"
     android:id="@+id/slide_down_layout">
 
@@ -18,20 +17,20 @@
         android:background="@color/white"/>
 
     <ImageButton
-        android:id="@+id/undo_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toEndOf="@+id/solve_button"
-        app:srcCompat="@drawable/icon_undo"
-        android:background="@color/white"/>
-
-    <ImageButton
         android:id="@+id/hint_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_toEndOf="@+id/undo_button"
+        android:layout_toEndOf="@+id/solve_button"
+        app:srcCompat="@drawable/icon_hint"
+        android:background="@color/white"/>
+
+    <ImageButton
+        android:id="@+id/undo_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/hint_button"
         android:background="@color/white"
-        app:srcCompat="@drawable/icon_hint" />
+        app:srcCompat="@drawable/icon_undo" />
 </RelativeLayout>

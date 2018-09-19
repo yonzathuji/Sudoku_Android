@@ -9,7 +9,7 @@ public class Tile {
         this.y = y;
     }
 
-    public Tile(Tile t){
+    public Tile(Tile t) {
         x = t.x;
         y = t.y;
     }
@@ -20,9 +20,8 @@ public class Tile {
         if (obj == this)
             return true;
 
-        if (!(obj instanceof Tile)) {
+        if (!(obj instanceof Tile))
             return false;
-        }
 
         Tile other = (Tile)obj;
 
@@ -31,6 +30,6 @@ public class Tile {
 
     @Override
     public String toString() {
-        return "["+String.valueOf(x)+","+String.valueOf(y)+"]";
+        return String.valueOf(x)+","+String.valueOf(y);
     }
 }

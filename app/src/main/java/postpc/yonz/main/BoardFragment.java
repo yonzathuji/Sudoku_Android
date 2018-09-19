@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 
 import java.io.File;
 
+import db.GameAction;
+import db.PuzzlesManager;
 import gui.BoardView;
 
 
@@ -23,25 +25,25 @@ public class BoardFragment extends Fragment {
         View view = inflater.inflate(R.layout.board_layout, container, false);
         boardView = view.findViewById(R.id.boardView);
 
-        boardView.initSudokuGame(getTag().equals("verify"));
+        int[][] solvedPuzzle = boardView.initSudokuGame(getTag().equals("verify"));
 
         Log.e("BOARD_FRAGMENT", getTag());
         return view;
     }
 
-    boolean insertValue(int value){
+    GameAction insertValue(int value){
         return boardView.insertValue(value);
     }
 
-    void insertReadOnlyValue(int value) {
-        boardView.insertReadOnlyValue(value);
+    GameAction insertReadOnlyValue(int value) {
+        return boardView.insertReadOnlyValue(value);
     }
 
-    void deleteReadOnlyValue() {
-        boardView.deleteReadOnlyValue();
+    GameAction deleteReadOnlyValue() {
+        return boardView.deleteReadOnlyValue();
     }
 
-    boolean deleteValue() {
+    GameAction deleteValue() {
         return boardView.deleteValue();
     }
 
@@ -49,12 +51,12 @@ public class BoardFragment extends Fragment {
         return boardView.insertNoteValue(noteValue);
     }
 
-    void hint(){
-        boardView.hint();
+    boolean hint(){
+        return boardView.hint();
     }
 
-    void solve(){
-        boardView.solve();
+    boolean solve(){
+        return boardView.solve();
     }
 
     boolean undo(){

@@ -5,6 +5,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import db.GameAction;
+import db.PuzzlesManager;
+
 public class BoardPlayActivity extends AppCompatActivity implements BoardDialogFragment.InputListener,
         BoardMenuFragment.InputListener{
 
@@ -14,7 +17,7 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         setContentView(R.layout.activity_board_play);
 
         BoardMenuFragment boardMenuFragment = (BoardMenuFragment)getSupportFragmentManager().
-                findFragmentById(R.id.menu_fragment);
+                findFragmentById(R.id.board_menu_fragment);
         if (boardMenuFragment != null) {
             boardMenuFragment.onPlayingState();
         }
@@ -31,13 +34,17 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null){
-            if (!boardFragment.deleteValue()){
+            GameAction action = boardFragment.deleteValue();
+            if (action == null){
                 BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
                         findFragmentById(R.id.board_dialog_fragment);
 
                 if (boardDialogFragment != null){
                     boardDialogFragment.onPostClick(R.id.delete_button, false);
                 }
+            }
+            else {
+                PuzzlesManager.writeUserAction(action);
             }
         }
     }
@@ -47,13 +54,16 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null){
-            if (!boardFragment.insertValue(value)){
+            GameAction action = boardFragment.insertValue(value);
+            if (action == null){
                 BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
                         findFragmentById(R.id.board_dialog_fragment);
-
                 if (boardDialogFragment != null){
                     boardDialogFragment.onPostClick(R.id.value_button, false);
                 }
+            }
+            else {
+                PuzzlesManager.writeUserAction(action);
             }
         }
     }
@@ -78,8 +88,13 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
     public void hint() {
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
-        if(boardFragment != null){
-            boardFragment.hint();
+        if(boardFragment != null) {
+            boolean result = boardFragment.hint();
+            BoardMenuFragment boardMenuFragment = (BoardMenuFragment) getSupportFragmentManager().
+                    findFragmentById(R.id.board_menu_fragment);
+            if (boardMenuFragment != null) {
+                boardMenuFragment.onPostClick(R.id.hint_button, result);
+            }
         }
     }
 
@@ -97,7 +112,12 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
                                 findFragmentById(R.id.board_fragment);
                         if(boardFragment != null){
                             findViewById(R.id.solve_button).setClickable(false);
-                            boardFragment.solve();
+                            boolean result = boardFragment.solve();
+                            BoardMenuFragment boardMenuFragment = (BoardMenuFragment) getSupportFragmentManager().
+                                    findFragmentById(R.id.board_menu_fragment);
+                            if (boardMenuFragment != null) {
+                                boardMenuFragment.onPostClick(R.id.solve_button, result);
+                            }
                         }
                     }})
                 .setNegativeButton(android.R.string.no, null).show();
@@ -112,11 +132,14 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         if(boardFragment != null){
             if (!boardFragment.undo()){
                 BoardMenuFragment boardMenuFragment = (BoardMenuFragment)getSupportFragmentManager().
-                        findFragmentById(R.id.menu_fragment);
+                        findFragmentById(R.id.board_menu_fragment);
 
                 if (boardMenuFragment != null){
                     boardMenuFragment.onPostClick(R.id.undo_button, false);
                 }
+            }
+            else {
+                PuzzlesManager.popLastUserAction();
             }
         }
     }

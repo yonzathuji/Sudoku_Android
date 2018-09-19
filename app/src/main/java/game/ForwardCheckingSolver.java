@@ -9,8 +9,11 @@ class ForwardCheckingSolver extends Solver {
     }
 
     @Override
-    void solve() {
-        backtrack();
+    boolean solve() {
+        if (!isSolvable()) {
+            return false;
+        }
+        return backtrack();
     }
 
     private boolean backtrack() {
@@ -21,24 +24,24 @@ class ForwardCheckingSolver extends Solver {
 
         List<Integer> legalValues = game.getTileLegalValues(tile);
 
-        for (int value : legalValues){
+        for (int value : legalValues) {
             boolean isValuePossible = true;
             game.setTileValue(tile, value);
             List<Tile> neighbors = game.getNeighborsIndexes(tile);
             for (Tile neighbor : neighbors) {
-                if (game.isTileEmpty(neighbor)){
-                    if (game.getTileLegalValues(neighbor).size() == 0){
+                if (game.isTileEmpty(neighbor)) {
+                    if (game.getTileLegalValues(neighbor).size() == 0) {
                         isValuePossible = false;
                         break;
                     }
                 }
             }
-            if (!isValuePossible){
+            if (!isValuePossible) {
                 game.deleteValue(tile);
                 continue;
             }
 
-            if (backtrack()){
+            if (backtrack()) {
                 return true;
             }
             game.deleteValue(tile);

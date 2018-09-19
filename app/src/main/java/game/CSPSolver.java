@@ -1,5 +1,7 @@
 package game;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,8 +16,11 @@ class CSPSolver extends Solver{
     }
 
     @Override
-    void solve() {
-        csp_backtrack();
+    boolean solve() {
+        if (!isSolvable()) {
+            return false;
+        }
+        return csp_backtrack();
     }
 
     private boolean csp_backtrack() {
@@ -53,20 +58,18 @@ class CSPSolver extends Solver{
         for (int y = 0; y < 9; y++) {
             for (int x = 0; x < 9; x++) {
                 Tile t = new Tile(x, y);
-                if (game.isTileEmpty(t) && !game.isReadOnly(t)){
+                if (game.isTileEmpty(t) && !game.isReadOnly(t)) {
                     int valuesCount = game.getTileLegalValues(t).size();
-                    if (valuesCount == 1){ // just one possible value. go for this tile
+                    if (valuesCount == 1) { // just one possible value. go for this tile
                        return new Tile(t);
                     }
-                    else if (0 < valuesCount && valuesCount< minValuesCount)
-                    {
+                    else if (0 < valuesCount && valuesCount< minValuesCount) {
                         // reset the array and add (x,y)
                         minValuesCountTiles.clear();
                         minValuesCountTiles.add(new Tile(t));
                         minValuesCount = valuesCount;
                     }
-                    else if (valuesCount == minValuesCount)
-                    {
+                    else if (valuesCount == minValuesCount) {
                         // just add (x,y)
                         minValuesCountTiles.add(new Tile(t));
                     }
@@ -91,11 +94,11 @@ class CSPSolver extends Solver{
                     game.getCol(t.x).size() +
                     game.getBlock(t.x, t.y).size();
 
-            if (fullNeighborsCount > maxFullNeighborCount){
+            if (fullNeighborsCount > maxFullNeighborCount) {
                 maxFullNeighborCountTiles.clear();
                 maxFullNeighborCountTiles.add(new Tile(t));
             }
-            else if (fullNeighborsCount == maxFullNeighborCount){
+            else if (fullNeighborsCount == maxFullNeighborCount) {
                 maxFullNeighborCountTiles.add(new Tile(t));
             }
         }
@@ -130,9 +133,9 @@ class CSPSolver extends Solver{
         List<Tile> neighbors = game.getNeighborsIndexes(tile);
         for (Tile neighbor : neighbors)
         {
-            if (game.isTileEmpty(neighbor)){
+            if (game.isTileEmpty(neighbor)) {
                 int neighborLegalValuesCount = game.getTileLegalValues(neighbor).size();
-                if (neighborLegalValuesCount == 0){
+                if (neighborLegalValuesCount == 0) {
                     valuesCount = -INF;
                     break;
                 }
