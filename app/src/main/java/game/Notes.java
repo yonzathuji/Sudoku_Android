@@ -14,8 +14,8 @@ public class Notes implements Iterable<Integer>{
         values = new ArraySet<>();
     }
 
-    void addNote(int note) {
-        values.add(note);
+    boolean addNote(int note) {
+        return values.add(note);
     }
 
     void deleteAllNotes() {

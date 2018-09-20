@@ -1,6 +1,7 @@
 package postpc.yonz.main;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -45,6 +46,7 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
             }
             else {
                 PuzzlesManager.writeUserAction(action);
+                PuzzlesManager.removeUserNotes(action);
             }
         }
     }
@@ -73,13 +75,17 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null){
-            if (!boardFragment.insertNoteValue(noteValue)){
+            GameAction action = boardFragment.insertNoteValue(noteValue);
+            if (action == null){
                 BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
                         findFragmentById(R.id.board_dialog_fragment);
 
                 if (boardDialogFragment != null){
                     boardDialogFragment.onPostClick(R.id.value_button, false);
                 }
+            }
+            else {
+                PuzzlesManager.writeUserNote(action);
             }
         }
     }
@@ -154,7 +160,7 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if (!boardFragment.unTouchView()){
-            super.onBackPressed();
+            returnToMainMenu();
         }
     }
 
@@ -163,6 +169,8 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
 
     @Override
     public void returnToMainMenu() {
-        // todo
+        Intent mainActivityIntent = new Intent(this, MainActivity.class);
+        startActivity(mainActivityIntent);
     }
+
 }

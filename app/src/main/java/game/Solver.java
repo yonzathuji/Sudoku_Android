@@ -29,7 +29,6 @@ abstract class Solver {
                 for (Tile neighborTile : neighborTiles) {
                     if (!currTile.equals(neighborTile) &&
                             game.getTileValue(neighborTile) == game.getTileValue(currTile)) {
-                        Log.e("SOLVER: EQUAL", currTile.toString() +" | " + neighborTile.toString());
                         return false;
                     }
                 }

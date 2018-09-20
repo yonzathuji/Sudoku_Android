@@ -35,18 +35,25 @@ public class SudokuGame implements Serializable{
     }
 
     public boolean generateSolution() {
+
+        // try getting it from the db first
+        if (PuzzlesManager.isSolutionFileExists()) {
+            solvedGrid = copyMatrix(PuzzlesManager.getSolutionBoard());
+            return true;
+        }
+
         int[][] original = copyMatrix(grid);
         int originalFullTilesCount = fullTilesCount;
 
         boolean isSolved = new CSPSolver(this).solve();
-        //boolean isSolved = isSolved();
         solvedGrid = copyMatrix(grid);
 
         grid = copyMatrix(original);
         fullTilesCount = originalFullTilesCount;
 
-        PuzzlesManager.createSolutionBoard(solvedGrid);
-        Log.e("SUDOKU GAME", String.valueOf(PuzzlesManager.isSolutionFileExists()));
+        if (isSolved) {
+            PuzzlesManager.createSolutionBoard(solvedGrid);
+        }
 
         return isSolved;
     }
@@ -111,8 +118,7 @@ public class SudokuGame implements Serializable{
 
     public boolean setNote(Tile t, int noteValue) {
         if (getTileValue(t) == EMPTY_VALUE) {
-            notesGrid[t.y][t.x].addNote(noteValue);
-            return true;
+            return notesGrid[t.y][t.x].addNote(noteValue);
         }
         return false;
     }
@@ -126,11 +132,11 @@ public class SudokuGame implements Serializable{
     }
 
     public int[][] getGrid() {
-        return copyMatrix(this.grid);
+        return copyMatrix(grid);
     }
 
     public int[][] getSolvedGrid() {
-        return solvedGrid;
+        return copyMatrix(solvedGrid);
     }
 
     /**
@@ -402,12 +408,12 @@ public class SudokuGame implements Serializable{
             }
         }
 
-//        if (userNotes != null) {
-//            for (GameAction action : userNotes) {
-//                Tile tile = action.tile;
-//                notesGrid[tile.y][tile.x].addNote(action.value);
-//            }
-//        }
+        if (userNotes != null) {
+            for (GameAction action : userNotes) {
+                Tile tile = action.tile;
+                notesGrid[tile.y][tile.x].addNote(action.value);
+            }
+        }
 
     }
 

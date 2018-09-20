@@ -64,7 +64,7 @@ class CSPSolver extends Solver{
                        return new Tile(t);
                     }
                     else if (0 < valuesCount && valuesCount< minValuesCount) {
-                        // reset the array and add (x,y)
+                        // resetPlayingBoard the array and add (x,y)
                         minValuesCountTiles.clear();
                         minValuesCountTiles.add(new Tile(t));
                         minValuesCount = valuesCount;

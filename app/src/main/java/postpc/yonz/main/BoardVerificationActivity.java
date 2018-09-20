@@ -70,7 +70,7 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
             dialogMessage = "Complete Verification?";
         }
         else {
-            dialogMessage = "There are still tiles with uncertain values. Continuing will reset them";
+            dialogMessage = "There are still tiles with uncertain values. Continuing will resetPlayingBoard them";
         }
 
         final Context context = this;
@@ -90,7 +90,18 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
     }
 
     @Override
+    public void onBackPressed() {
+        BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
+                findFragmentById(R.id.board_fragment);
+        if (!boardFragment.unTouchView()){
+            returnToMainMenu();
+        }
+    }
+
+    @Override
     public void returnToMainMenu() {
-        // todo
+        PuzzlesManager.newGame();
+        Intent mainActivityIntent = new Intent(this, MainActivity.class);
+        startActivity(mainActivityIntent);
     }
 }

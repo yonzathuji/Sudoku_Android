@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:visibility="gone"
-    android:id="@+id/slide_down_layout">
+    android:id="@+id/slide_down_layout"
+    android:visibility="gone">
 
 
     <ImageButton
@@ -36,4 +36,5 @@
         android:background="@android:color/transparent"
         android:scaleType="center"
         app:srcCompat="@drawable/icon_undo" />
+
 </RelativeLayout>

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ViewFlipper;
 
 import db.GameAction;
+import db.PuzzlesManager;
 import game.SudokuGame;
 import gui.BoardView;
 
@@ -31,7 +32,6 @@ public class BoardFragment extends Fragment {
         boardView = view.findViewById(R.id.boardView);
         boardView.initSudokuGame(isVerification);
 
-
         if (!isVerification) {
             viewFlipper.showNext();
             AsyncGameSolver asyncGameSolver = new AsyncGameSolver();
@@ -39,7 +39,6 @@ public class BoardFragment extends Fragment {
         }
         return view;
     }
-
 
     GameAction insertValue(int value){
         return boardView.insertValue(value);
@@ -57,7 +56,7 @@ public class BoardFragment extends Fragment {
         return boardView.deleteValue();
     }
 
-    boolean insertNoteValue(int noteValue) {
+    GameAction insertNoteValue(int noteValue) {
         return boardView.insertNoteValue(noteValue);
     }
 

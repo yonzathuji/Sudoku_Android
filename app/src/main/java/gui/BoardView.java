@@ -429,7 +429,6 @@ public class BoardView extends View {
                 return new GameAction(mTouchedTile, 0, false);
             }
         }
-
         return null;
     }
 
@@ -447,22 +446,18 @@ public class BoardView extends View {
         return null;
     }
 
-    public boolean insertNoteValue(int noteValue) {
-        boolean result = true;
+    public GameAction insertNoteValue(int noteValue) {
         if (mTouchedTile != null) {
-            if (!mSudokuGame.setNote(mTouchedTile, noteValue)) {
-                result = false;
-            }
-            else {
+            if (mSudokuGame.setNote(mTouchedTile, noteValue)) {
                 invalidate();
+                return new GameAction(mTouchedTile, noteValue, true);
             }
         }
         else {
             mTouchedValue = noteValue;
             invalidate();
         }
-
-        return result;
+        return null;
     }
 
     /**

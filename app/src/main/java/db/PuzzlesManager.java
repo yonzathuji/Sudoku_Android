@@ -64,9 +64,10 @@ public abstract class PuzzlesManager {
         return new File(context.getExternalFilesDir(null),Config.PLAYING_PUZZLE).exists();
     }
 
-    public static void resetFiles() {
+    public static void newGame() {
         new File(context.getExternalFilesDir(null),Config.PLAYING_PUZZLE).delete();
         new File(context.getExternalFilesDir(null),Config.VERIFICATION_PUZZLE).delete();
+        new File(context.getExternalFilesDir(null),Config.SOLUTION_PUZZLE).delete();
         new File(context.getExternalFilesDir(null),Config.NOTES_FILE).delete();
         new File(context.getExternalFilesDir(null),Config.ACTIONS_FILE).delete();
     }
@@ -169,6 +170,29 @@ public abstract class PuzzlesManager {
         return null;
     }
 
+    public static int[][] getSolutionBoard() {
+        try {
+            File puzzleFile = new File(context.getExternalFilesDir(null), Config.SOLUTION_PUZZLE);
+            List<String> lines = Files.readAllLines(puzzleFile.toPath());
+            int[][] board = new int[9][9];
+            int rowIndex = 0;
+            for (String line : lines) {
+                int colIndex = 0;
+                for (char charValue : line.toCharArray()) {
+                    board[rowIndex][colIndex] = charValue - 48;
+                    colIndex++;
+                }
+                rowIndex++;
+            }
+            return board;
+
+        }
+        catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
     public static List<GameAction> getUserActions() {
         try {
             List<GameAction> actions = new ArrayList<>();
@@ -192,7 +216,12 @@ public abstract class PuzzlesManager {
             File notesFile = new File(context.getExternalFilesDir(null), Config.NOTES_FILE);
             List<String> lines = Files.readAllLines(notesFile.toPath());
             for(String line : lines) {
-                notes.add(new GameAction(line));
+                if (line.length() < 3) continue;
+                String tileString = line.substring(0,3);
+                String[] notesStrings = line.substring(4).split(",");
+                for (String noteString : notesStrings) {
+                    notes.add(new GameAction(tileString + "," + noteString));
+                }
             }
             return notes;
         }
@@ -208,18 +237,61 @@ public abstract class PuzzlesManager {
            BufferedWriter writer = new BufferedWriter(new FileWriter(actionsFile, true));
            writer.write(action.toString() + "\n");
            writer.close();
-
-           File puzzleFile = new File(context.getExternalFilesDir(null), Config.ACTIONS_FILE);
-           List<String> lines = Files.readAllLines(puzzleFile.toPath());
-           Log.e("TEST", "~~~~~~~~~");
-           for (String line : lines) {
-               Log.e("TEST", line);
-           }
-           Log.e("TEST", "~~~~~~~~~");
        }
        catch (IOException e) {
            Log.e("PuzzleManager Error", e.getMessage());
        }
+    }
+
+    public static void writeUserNote(GameAction action) {
+        try {
+            File notesFile = new File(context.getExternalFilesDir(null), Config.NOTES_FILE);
+            try {
+                List<String> lines = Files.readAllLines(notesFile.toPath());
+                int lineIndex = 0;
+                for (String line : lines) {
+                    if (line.startsWith(action.tile.toString())) {
+                        line += "," + String.valueOf(action.value) + "\n";
+                        lines.set(lineIndex, line);
+                        Files.write(notesFile.toPath(), lines);
+                        return;
+                    }
+                    lineIndex++;
+                }
+                // tile not in notes-file so add a new line
+                lines.add(action.tile.toString() + "," + String.valueOf(action.value) + "\n");
+                Files.write(notesFile.toPath(), lines);
+            }
+            catch (IOException e) {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(notesFile, true));
+                writer.write(action.toString() + "\n");
+                writer.close();
+            }
+
+        }
+        catch (IOException e) {
+            Log.e("PuzzleManager Error", e.getMessage());
+        }
+
+    }
+
+    public static void removeUserNotes(GameAction action) {
+        try {
+            File notesFile = new File(context.getExternalFilesDir(null), Config.NOTES_FILE);
+            List<String> lines = Files.readAllLines(notesFile.toPath());
+            int lineIndex = 0;
+            for (String line : lines) {
+                if (line.startsWith(action.tile.toString())) {
+                    lines.remove(lineIndex);
+                    Files.write(notesFile.toPath(), lines);
+                    return;
+                }
+                lineIndex ++;
+            }
+        }
+        catch (IOException e) {
+            Log.e("PuzzleManager Error", e.getMessage());
+        }
     }
 
     public static void popLastUserAction() {
@@ -247,5 +319,11 @@ public abstract class PuzzlesManager {
             Log.e("PuzzleManager Error", e.getMessage());
         }
         return false;
+    }
+
+    public static void resetPlayingBoard() {
+        new File(context.getExternalFilesDir(null),Config.PLAYING_PUZZLE).delete();
+        new File(context.getExternalFilesDir(null),Config.NOTES_FILE).delete();
+        new File(context.getExternalFilesDir(null),Config.ACTIONS_FILE).delete();
     }
 }

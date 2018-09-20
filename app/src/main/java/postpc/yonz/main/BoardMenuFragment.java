@@ -17,7 +17,7 @@ import android.widget.RelativeLayout;
 public class BoardMenuFragment extends Fragment implements View.OnClickListener, PostClick, FragmentState{
 
     View view;
-    private ImageButton hintButton, slideMenuButton, solveButton, undoButton, mainMenuButton, verifiedButton;
+    private ImageButton hintButton, slideMenuButton, verifiedButton;
     private Animation slideRightAnimation, slideLeftAnimation;
     private RelativeLayout slideRightLayout;
     private boolean isMenuOpen = false;
@@ -26,7 +26,7 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.board_menu_layout, container, false);
 
-        mainMenuButton = view.findViewById(R.id.main_menu_button);
+        ImageButton mainMenuButton = view.findViewById(R.id.main_menu_button);
         mainMenuButton.setOnClickListener(this);
 
         verifiedButton = view.findViewById(R.id.verified_button);
@@ -45,12 +45,11 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
         slideMenuButton = view.findViewById(R.id.slide_menu_button);
         slideMenuButton.setOnClickListener(this);
 
-        solveButton = view.findViewById(R.id.solve_button);
+        ImageButton solveButton = view.findViewById(R.id.solve_button);
         solveButton.setOnClickListener(this);
 
-        undoButton = view.findViewById(R.id.undo_button);
+        ImageButton undoButton = view.findViewById(R.id.undo_button);
         undoButton.setOnClickListener(this);
-
 
         return view;
     }
@@ -96,16 +95,13 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
     }
 
     public void closeMenu(){
-
         slideRightLayout.startAnimation(slideLeftAnimation);
         slideMenuButton.animate().rotation(-0).setDuration(500);
-
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 slideRightLayout.setVisibility(View.GONE);
             }}, 200);
-
 
         isMenuOpen = false;
     }

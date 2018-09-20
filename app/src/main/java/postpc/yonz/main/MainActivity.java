@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         newGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PuzzlesManager.resetFiles();
+                PuzzlesManager.newGame();
                 continueButton.setVisibility(View.INVISIBLE);
                 getPuzzleFromCamera();
             }
@@ -89,4 +89,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+    }
 }
