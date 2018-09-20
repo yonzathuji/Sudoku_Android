@@ -1,5 +1,6 @@
 package postpc.yonz.main;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -7,29 +8,38 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import java.io.File;
+import android.widget.ViewFlipper;
 
 import db.GameAction;
-import db.PuzzlesManager;
+import game.SudokuGame;
 import gui.BoardView;
 
 
 public class BoardFragment extends Fragment {
 
     BoardView boardView;
+    ViewFlipper viewFlipper;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.board_layout, container, false);
+        View view = inflater.inflate(R.layout.board_holder_layout, container, false);
+        viewFlipper = view.findViewById(R.id.view_flipper);
+
+        final boolean isVerification = getTag().equals("verify");
+
         boardView = view.findViewById(R.id.boardView);
+        boardView.initSudokuGame(isVerification);
 
-        int[][] solvedPuzzle = boardView.initSudokuGame(getTag().equals("verify"));
 
-        Log.e("BOARD_FRAGMENT", getTag());
+        if (!isVerification) {
+            viewFlipper.showNext();
+            AsyncGameSolver asyncGameSolver = new AsyncGameSolver();
+            asyncGameSolver.execute();
+        }
         return view;
     }
+
 
     GameAction insertValue(int value){
         return boardView.insertValue(value);
@@ -51,7 +61,7 @@ public class BoardFragment extends Fragment {
         return boardView.insertNoteValue(noteValue);
     }
 
-    boolean hint(){
+    GameAction hint(){
         return boardView.hint();
     }
 
@@ -65,6 +75,20 @@ public class BoardFragment extends Fragment {
 
     boolean unTouchView(){
         return boardView.unTouchView();
+    }
+
+    private class AsyncGameSolver extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            boardView.setSolved(boardView.getSudokuGame().generateSolution());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            viewFlipper.showPrevious();
+        }
     }
 
 }

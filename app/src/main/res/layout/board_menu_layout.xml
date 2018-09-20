@@ -13,7 +13,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
-        android:background="@color/white"
+        android:background="@android:color/transparent"
+        android:scaleType="center"
         app:srcCompat="@drawable/icon_menu" />
 
     <gui.SlideMenu
@@ -32,6 +33,7 @@
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/main_menu_button"
         android:background="@android:color/transparent"
+        android:scaleType="center"
         app:srcCompat="@drawable/icon_slidemenu_closed" />
 
     <ImageButton
@@ -40,7 +42,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:background="@color/white"
+        android:background="@android:color/transparent"
+        android:scaleType="center"
         app:srcCompat="@drawable/icon_verified" />
 
 

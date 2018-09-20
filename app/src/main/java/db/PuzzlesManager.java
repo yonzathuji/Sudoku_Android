@@ -36,9 +36,28 @@ public abstract class PuzzlesManager {
             return true;
         }
         catch (Exception e) {
-            Log.e("PuzzleManager Error", e.getMessage());
+            Log.e("PuzzleManager Error", e.getMessage() +
+                    " : error generating verification file");
         }
         return false;
+    }
+
+    public static void  createSolutionBoard(int[][] puzzle) {
+        try {
+            File puzzleFile = new File(context.getExternalFilesDir(null), Config.SOLUTION_PUZZLE);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(puzzleFile, false));
+            for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
+                    writer.write(String.valueOf(puzzle[y][x]));
+                }
+                writer.write("\n");
+            }
+            writer.close();
+        }
+        catch (Exception e) {
+            Log.e("PuzzleManager Error", e.getMessage() +
+                    " : error generating solution file");
+        }
     }
 
     public static boolean isPlayingPuzzleFileExists() {
@@ -216,5 +235,17 @@ public abstract class PuzzlesManager {
         catch (IOException e) {
             Log.e("PuzzleManager Error", e.getMessage());
         }
+    }
+
+    public static boolean isSolutionFileExists() {
+        try {
+            File solutionPuzzle = new File(context.getExternalFilesDir(null), Config.SOLUTION_PUZZLE);
+            List<String> lines = Files.readAllLines(solutionPuzzle.toPath());
+            return lines.size() == 9;
+        }
+        catch (IOException e){
+            Log.e("PuzzleManager Error", e.getMessage());
+        }
+        return false;
     }
 }

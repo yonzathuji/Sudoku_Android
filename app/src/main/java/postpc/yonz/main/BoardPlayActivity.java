@@ -89,11 +89,16 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null) {
-            boolean result = boardFragment.hint();
-            BoardMenuFragment boardMenuFragment = (BoardMenuFragment) getSupportFragmentManager().
-                    findFragmentById(R.id.board_menu_fragment);
-            if (boardMenuFragment != null) {
-                boardMenuFragment.onPostClick(R.id.hint_button, result);
+            GameAction action = boardFragment.hint();
+            if (action == null) {
+                BoardMenuFragment boardMenuFragment = (BoardMenuFragment) getSupportFragmentManager().
+                        findFragmentById(R.id.board_menu_fragment);
+                if (boardMenuFragment != null) {
+                    boardMenuFragment.onPostClick(R.id.hint_button, false);
+                }
+            }
+            else {
+                PuzzlesManager.writeUserAction(action);
             }
         }
     }

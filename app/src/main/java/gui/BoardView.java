@@ -53,8 +53,6 @@ public class BoardView extends View {
     private int mTouchedValue;
 
     private boolean isSolved = false;
-    private boolean isGeneratingSolution = true;
-    private boolean isVerification = true;
 
     public BoardView(Context context, AttributeSet attrs) throws PuzzleNotFoundException{
         super(context, attrs);
@@ -105,21 +103,20 @@ public class BoardView extends View {
      * @param isForVerification true if this is the board verification mode.
      */
     public void initSudokuGame(boolean isForVerification) {
-        isVerification = isForVerification;
+
+        mSudokuGame = new SudokuGame(isForVerification);
         if (isForVerification) {
-            mSudokuGame = new SudokuGame(true);
             mUnrecognizedTiles = mSudokuGame.getUnrecognizedTiles();
-            isGeneratingSolution = false;
         }
-        else {
-            mSudokuGame = new SudokuGame(false);
-            new Thread(new Runnable() {
-                public void run() {
-                    isSolved = mSudokuGame.generateSolution();
-                    isGeneratingSolution = false;
-                }
-            }).start();
-        }
+
+    }
+
+    public SudokuGame getSudokuGame() {
+        return mSudokuGame;
+    }
+
+    public void setSolved(boolean result) {
+        isSolved = result;
     }
 
     @Override
@@ -168,11 +165,18 @@ public class BoardView extends View {
 
         setMeasuredDimension(width, height);
 
-        float cellTextSize = mCellHeight * 0.75f;
+        Typeface font = Typeface.createFromAsset(getContext().getAssets(), "fonts/gadugib.ttf");
+
+        float cellTextSize = mCellHeight * 0.85f;
         mCellValuePaint.setTextSize(cellTextSize);
         mCellValueReadonlyPaint.setTextSize(cellTextSize);
         mCellValueHighlighted.setTextSize(cellTextSize);
         mCellNotePaint.setTextSize(mCellHeight / 3.0f);
+//
+//        mCellValuePaint.setTypeface(font);
+//        mCellValueReadonlyPaint.setTypeface(font);
+//        mCellValueHighlighted.setTypeface(font);
+//        mCellNotePaint.setTypeface(font);
 
         mNumberLeft = (int) ((mCellWidth - mCellValuePaint.measureText("9")) / 2);
         mNumberTop = (int) ((mCellHeight - mCellValuePaint.getTextSize()) / 2);
@@ -198,7 +202,7 @@ public class BoardView extends View {
         super.onDraw(canvas);
 
         // if on playing mode, wait for a solution to be generated before displaying the board
-        while (!isVerification && isGeneratingSolution) {}
+        // (!isVerification && isGeneratingSolution) {}
 
         int width = getWidth() - getPaddingRight();
         int height = getHeight() - getPaddingBottom();
@@ -369,7 +373,7 @@ public class BoardView extends View {
      * @return a GameAction object if the insertion was successful. null otherwise.
      */
     public GameAction insertValue(int value) {
-        GameAction action = null;
+        GameAction action;
         if (mTouchedTile != null) {
             int prevValue = mSudokuGame.getTileValue(mTouchedTile);
             action = new GameAction(mTouchedTile,
@@ -380,13 +384,14 @@ public class BoardView extends View {
                     actionsStack.push(new GameAction(mTouchedTile, prevValue, false));
                 }
                 invalidate();
+                return new GameAction(mTouchedTile, value, false);
             }
         }
         else {
             mTouchedValue = value;
             invalidate();
         }
-        return action;
+        return null;
     }
 
     /**
@@ -410,7 +415,7 @@ public class BoardView extends View {
      * @return a GameAction object if the deletion was successful. null otherwise.
      */
     public GameAction deleteValue() {
-        GameAction action = null;
+        GameAction action;
         if (mTouchedTile != null) {
             action = new GameAction(mTouchedTile,
                     mSudokuGame.getTileValue(mTouchedTile), false);
@@ -421,10 +426,11 @@ public class BoardView extends View {
                     actionsStack.push(action);
                 }
                 invalidate();
+                return new GameAction(mTouchedTile, 0, false);
             }
         }
 
-        return action;
+        return null;
     }
 
     /**
@@ -463,26 +469,35 @@ public class BoardView extends View {
      * Attempts to display a hint on the board.
      * @return true if a hint was displayed. false otherwise.
      */
-    public boolean hint() {
+    public GameAction hint() {
         if (isSolved) {
             if (mSudokuGame.isGridCorrect()) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        mHintedTile = mSudokuGame.getHint();
-                        invalidate();
-                    }
-                }).start();
+                mHintedTile = mSudokuGame.getHint();
+
+                if (mHintedTile == null) {
+                    return null;
+                }
+
+                if (mSudokuGame.getTileValue(mHintedTile) == 0) { // the tile was just marked
+                    invalidate();
+                    return null;
+                }
+                else {
+                    invalidate();
+                    return new GameAction(mTouchedTile, mSudokuGame.getTileValue(mTouchedTile), false);
+                }
+
             }
             else {
                 mWrongTiles = mSudokuGame.getWrongTiles();
                 invalidate();
+                return null;
             }
         }
         else { // todo
             Toast.makeText(getContext(), "Puzzle has no solution", Toast.LENGTH_LONG).show();
-            return false;
+            return null;
         }
-        return mHintedTile != null;
     }
 
     /**

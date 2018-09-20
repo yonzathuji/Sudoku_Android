@@ -14,7 +14,8 @@
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
         app:srcCompat="@drawable/icon_solve"
-        android:background="@color/white"/>
+        android:background="@android:color/transparent"
+        android:scaleType="center"/>
 
     <ImageButton
         android:id="@+id/hint_button"
@@ -23,7 +24,8 @@
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/solve_button"
         app:srcCompat="@drawable/icon_hint"
-        android:background="@color/white"/>
+        android:background="@android:color/transparent"
+        android:scaleType="center"/>
 
     <ImageButton
         android:id="@+id/undo_button"
@@ -31,6 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/hint_button"
-        android:background="@color/white"
+        android:background="@android:color/transparent"
+        android:scaleType="center"
         app:srcCompat="@drawable/icon_undo" />
 </RelativeLayout>

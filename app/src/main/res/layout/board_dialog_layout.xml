@@ -13,6 +13,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         app:srcCompat="@drawable/icon_delete"
+        android:scaleType="center"
         android:background="@android:color/transparent"/>
 
     <ImageButton
@@ -22,6 +23,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:background="@android:color/transparent"
+        android:scaleType="center"
         app:srcCompat="@drawable/icon_insert" />
 
     <TableLayout

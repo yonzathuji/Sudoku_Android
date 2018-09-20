@@ -1,5 +1,7 @@
 package game;
 
+import android.util.Log;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,9 @@ public class SudokuGame implements Serializable{
 
         grid = copyMatrix(original);
         fullTilesCount = originalFullTilesCount;
+
+        PuzzlesManager.createSolutionBoard(solvedGrid);
+        Log.e("SUDOKU GAME", String.valueOf(PuzzlesManager.isSolutionFileExists()));
 
         return isSolved;
     }
@@ -185,7 +190,7 @@ public class SudokuGame implements Serializable{
             }
             Tile chosenTile = emptyTiles.get(new Random().nextInt(emptyTiles.size()));
             setTileValue(chosenTile, solvedGrid[chosenTile.y][chosenTile.x]);
-            readOnlyTiles.add(chosenTile);
+            //readOnlyTiles.add(chosenTile);
             return chosenTile;
         }
 
