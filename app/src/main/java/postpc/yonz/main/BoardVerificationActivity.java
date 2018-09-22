@@ -79,14 +79,14 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
                 .setTitle("Complete Verification")
                 .setMessage(dialogMessage)
                 .setIcon(R.drawable.icon_verified)
-                .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int whichButton) {
                         PuzzlesManager.completeVerification();
                         Intent boardVerificationIntent = new Intent(context, BoardPlayActivity.class);
                         startActivity(boardVerificationIntent);
                     }})
-                .setNegativeButton("Cancel", null).show();
+                .setNegativeButton("No", null).show();
     }
 
     @Override

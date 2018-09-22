@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getPuzzleFromCamera(){
-        Intent intent = new Intent(this, CameraActivity.class);
+        Intent intent = new Intent(this, ImageProcessingActivity.class);
         startActivityForResult(intent, 1);
     }
 

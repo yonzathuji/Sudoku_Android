@@ -3,13 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
     <ViewFlipper
-        android:id="@+id/view_flipper_board"
+        android:id="@+id/view_flipper_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <include layout="@layout/board_layout"/>
-        <include layout="@layout/solution_loader_layout"/>
+        <include layout="@layout/image_source_layout"/>
+        <include layout="@layout/image_processing_layout"/>
     </ViewFlipper>
-
 </LinearLayout>

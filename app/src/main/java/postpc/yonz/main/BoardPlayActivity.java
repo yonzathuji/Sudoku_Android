@@ -115,14 +115,13 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
                 .setTitle("Show Solution")
                 .setMessage("Are you sure you want to display the full solution?")
                 .setIcon(R.drawable.icon_solve)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int whichButton) {
 
                         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                                 findFragmentById(R.id.board_fragment);
                         if(boardFragment != null){
-                            findViewById(R.id.solve_button).setClickable(false);
                             boolean result = boardFragment.solve();
                             BoardMenuFragment boardMenuFragment = (BoardMenuFragment) getSupportFragmentManager().
                                     findFragmentById(R.id.board_menu_fragment);

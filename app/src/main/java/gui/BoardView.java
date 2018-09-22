@@ -479,7 +479,7 @@ public class BoardView extends View {
                 }
                 else {
                     invalidate();
-                    return new GameAction(mTouchedTile, mSudokuGame.getTileValue(mTouchedTile), false);
+                    return new GameAction(mHintedTile, mSudokuGame.getTileValue(mHintedTile), false);
                 }
 
             }
