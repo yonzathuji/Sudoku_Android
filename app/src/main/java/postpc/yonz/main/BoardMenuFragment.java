@@ -100,7 +100,7 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                slideRightLayout.setVisibility(View.GONE);
+                slideRightLayout.setVisibility(View.INVISIBLE);
             }}, 200);
 
         isMenuOpen = false;

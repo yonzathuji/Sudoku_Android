@@ -14,18 +14,24 @@
         android:theme="@style/AppTheme"
         android:name=".MyApplication">
 
-        <activity android:name="postpc.yonz.main.MainActivity" >
-
+        <activity android:name="postpc.yonz.main.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name="postpc.yonz.main.ImageProcessingActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat"
+            android:screenOrientation="portrait"/>
+
         <activity android:name="postpc.yonz.main.BoardPlayActivity"/>
-        <activity android:name="postpc.yonz.main.ImageProcessingActivity"/>
+
         <activity android:name="postpc.yonz.main.BoardVerificationActivity"/>
-        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" android:theme="@style/Base.Theme.AppCompat"/>
         
         <provider
             android:authorities="${applicationId}.provider"
