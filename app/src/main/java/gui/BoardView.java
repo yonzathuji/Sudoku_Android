@@ -489,7 +489,7 @@ public class BoardView extends View {
                 return null;
             }
         }
-        else { // todo
+        else {
             Toast.makeText(getContext(), "Puzzle has no solution", Toast.LENGTH_LONG).show();
             return null;
         }
@@ -509,7 +509,7 @@ public class BoardView extends View {
             mTouchedValue = 0;
             invalidate();
         }
-        else { // todo
+        else {
             Toast.makeText(getContext(), "Puzzle has no solution", Toast.LENGTH_LONG).show();
         }
 
