@@ -13,10 +13,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.view.Window;
 import android.widget.ImageView;
-import android.widget.ViewFlipper;
 
 import com.theartofdev.edmodo.cropper.CropImage;
 
@@ -33,28 +31,24 @@ import ocr.PuzzleScanner;
 public class ImageProcessingActivity extends Activity {
     private static final int CAMERA_IMAGE = 1;
     private static final int GALLERY_IMAGE = 2;
-    File photoFile;
-    ViewFlipper viewFlipper;
+    private File photoFile;
+    private String imgSrc;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_image_creation);
-        viewFlipper = findViewById(R.id.view_flipper_image);
-        Button cameraButton = findViewById(R.id.camera_button);
-        cameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.image_processing_layout);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            imgSrc = extras.getString("IMG_SRC");
+            if (imgSrc != null && imgSrc.equals("CAMERA")) {
                 getImageFromCamera();
             }
-        });
-
-        Button galleryButton = findViewById(R.id.gallery_button);
-        galleryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            else {
                 getImageFromGallery();
             }
-        });
+        }
     }
 
     private void getImageFromCamera() {
@@ -127,7 +121,7 @@ public class ImageProcessingActivity extends Activity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         if (resultCode  == RESULT_OK)
         {
             if (requestCode == CAMERA_IMAGE){
@@ -151,7 +145,6 @@ public class ImageProcessingActivity extends Activity {
 
     private void processImage(Bitmap imageBitmap) {
         try {
-            viewFlipper.showNext();
             setImage(imageBitmap);
             ImageView imageView = findViewById(R.id.PreviewImageView);
             PuzzleScanner puzzleScanner = new PuzzleScanner(imageBitmap, this.getApplicationContext());

@@ -298,7 +298,6 @@ public class BoardView extends View {
                             int c = n % 3;
                             int r = n / 3;
 
-                            // todo now way it should be 8 (just works for my phone)
                             canvas.drawText(Integer.toString(number),
                                     cellLeft + c * noteWidth + 8,
                                     cellTop + mNoteTop - noteAscent + r * noteWidth - 8,
@@ -390,6 +389,7 @@ public class BoardView extends View {
         else {
             mTouchedValue = value;
             invalidate();
+            return new GameAction(null, value, false);
         }
         return null;
     }

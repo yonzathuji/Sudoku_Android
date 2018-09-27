@@ -19,7 +19,7 @@ public class BoardDialogFragment extends Fragment implements View.OnClickListene
            input4, input5, input6,
            input7, input8, input9;
     ImageButton deleteButton, valueButton;
-    SparseIntArray buttonToValueMap;
+    SparseIntArray buttonToValueMap, valueToButtonMap;
     boolean isInsertValue = true; // true for value, false for notes
 
 
@@ -56,6 +56,7 @@ public class BoardDialogFragment extends Fragment implements View.OnClickListene
 
     private void initInputButtons(View view) {
         buttonToValueMap = new SparseIntArray();
+        valueToButtonMap = new SparseIntArray();
 
         input1 = view.findViewById(R.id.input1);
         input1.setOnClickListener(this);
@@ -85,6 +86,16 @@ public class BoardDialogFragment extends Fragment implements View.OnClickListene
         buttonToValueMap.put(R.id.input7, 7);
         buttonToValueMap.put(R.id.input8, 8);
         buttonToValueMap.put(R.id.input9, 9);
+
+        valueToButtonMap.put(1, R.id.input1);
+        valueToButtonMap.put(2, R.id.input2);
+        valueToButtonMap.put(3, R.id.input3);
+        valueToButtonMap.put(4, R.id.input4);
+        valueToButtonMap.put(5, R.id.input5);
+        valueToButtonMap.put(6, R.id.input6);
+        valueToButtonMap.put(7, R.id.input7);
+        valueToButtonMap.put(8, R.id.input8);
+        valueToButtonMap.put(9, R.id.input9);
 
     }
 

@@ -4,18 +4,14 @@ package db;
 import android.content.Context;
 import android.util.Log;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import game.Notes;
-import game.Tile;
 import postpc.yonz.main.MyApplication;
 
 public abstract class PuzzlesManager {
@@ -61,7 +57,16 @@ public abstract class PuzzlesManager {
     }
 
     public static boolean isPlayingPuzzleFileExists() {
-        return new File(context.getExternalFilesDir(null),Config.PLAYING_PUZZLE).exists();
+        try {
+            File puzzleFile = new File(context.getExternalFilesDir(null), Config.PLAYING_PUZZLE);
+            List<String> lines = Files.readAllLines(puzzleFile.toPath());
+            Log.e("DB:::", String.valueOf(lines.size()));
+            return lines.size() == 9;
+        }
+        catch (IOException e) {
+            Log.e("PuzzleManager Error", e.getMessage());
+        }
+        return false;
     }
 
     public static void newGame() {
@@ -91,7 +96,7 @@ public abstract class PuzzlesManager {
 
         }
         catch (IOException e) {
-            System.out.println(e.getMessage());
+            Log.e("PuzzleManager Error", e.getMessage());
         }
         return null;
     }

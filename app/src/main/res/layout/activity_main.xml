@@ -6,23 +6,36 @@
     android:background="@color/white"
     tools:context="postpc.yonz.main.MainActivity">
 
+
     <Button
         android:id="@+id/new_game_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="155dp"
-        android:layout_marginTop="169dp"
-        android:text="NEW GAME" />
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:background="@drawable/input_button_bg"
+        android:text="  New Game  "
+        android:textAllCaps="false"
+        android:textSize="30sp" />
 
     <Button
         android:id="@+id/continue_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/new_game_button"
-        android:layout_below="@+id/new_game_button"
-        android:layout_marginTop="118dp"
-        android:text="CONTINUE"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="140dp"
+        android:textAllCaps="false"
+        android:textSize="30sp"
+        android:background="@drawable/input_button_bg"
+        android:text="  Continue  "
         android:visibility="gone"/>
+
+    <gui.MainMenuSlideMenu
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/new_game_button"
+        android:layout_centerHorizontal="true" />
+
+
 </RelativeLayout>

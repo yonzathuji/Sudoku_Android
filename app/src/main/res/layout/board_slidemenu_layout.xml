@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/slide_down_layout"
-    android:background="@color/white"
-    android:visibility="invisible">
+    android:id="@+id/board_slide_menu_layout"
+    android:visibility="invisible"
+    android:background="@color/white">
 
 
     <ImageButton

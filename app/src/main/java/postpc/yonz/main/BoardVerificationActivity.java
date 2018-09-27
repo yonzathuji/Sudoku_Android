@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Window;
 
 import db.GameAction;
 import db.PuzzlesManager;
@@ -16,6 +17,7 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_board_verification);
 
         BoardMenuFragment boardMenuFragment = (BoardMenuFragment)getSupportFragmentManager().
@@ -29,6 +31,14 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
         if (boardDialogFragment != null) {
             boardDialogFragment.onVerificationState();
         }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Please Verify the Board")
+                .setMessage("Edit the board if any mistakes were made.\nThen click ✔ to finish.")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.cancel();
+            }}).show();;
     }
 
     @Override
@@ -70,7 +80,7 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
             dialogMessage = "Complete Verification?";
         }
         else {
-            dialogMessage = "There are still tiles with uncertain values. Continuing will resetPlayingBoard them";
+            dialogMessage = "There are still tiles with uncertain values. Continuing will reset them";
         }
 
         final Context context = this;
@@ -79,14 +89,14 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
                 .setTitle("Complete Verification")
                 .setMessage(dialogMessage)
                 .setIcon(R.drawable.icon_verified)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int whichButton) {
                         PuzzlesManager.completeVerification();
                         Intent boardVerificationIntent = new Intent(context, BoardPlayActivity.class);
                         startActivity(boardVerificationIntent);
                     }})
-                .setNegativeButton("No", null).show();
+                .setNegativeButton("Keep Editing", null).show();
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Window;
 
 import db.GameAction;
 import db.PuzzlesManager;
@@ -15,6 +16,7 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_board_play);
 
         BoardMenuFragment boardMenuFragment = (BoardMenuFragment)getSupportFragmentManager().
@@ -55,17 +57,19 @@ public class BoardPlayActivity extends AppCompatActivity implements BoardDialogF
     public void insertValue(int value) {
         BoardFragment boardFragment = (BoardFragment)getSupportFragmentManager().
                 findFragmentById(R.id.board_fragment);
+        BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
+                findFragmentById(R.id.board_dialog_fragment);
         if(boardFragment != null){
             GameAction action = boardFragment.insertValue(value);
             if (action == null){
-                BoardDialogFragment boardDialogFragment = (BoardDialogFragment)getSupportFragmentManager().
-                        findFragmentById(R.id.board_dialog_fragment);
                 if (boardDialogFragment != null){
                     boardDialogFragment.onPostClick(R.id.value_button, false);
                 }
             }
             else {
-                PuzzlesManager.writeUserAction(action);
+                if (action.tile != null) {
+                    PuzzlesManager.writeUserAction(action);
+                }
             }
         }
     }

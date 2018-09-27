@@ -9,7 +9,9 @@ public class GameAction {
     public boolean isNote;
 
     public GameAction(Tile t, int value, boolean isNote) {
-        this.tile = new Tile(t);
+        if (t != null) {
+            this.tile = new Tile(t);
+        }
         this.value = value;
         this.isNote = isNote;
     }

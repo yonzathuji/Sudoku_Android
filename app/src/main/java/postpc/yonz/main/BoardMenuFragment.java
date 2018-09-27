@@ -19,7 +19,7 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
     View view;
     private ImageButton hintButton, slideMenuButton, verifiedButton;
     private Animation slideRightAnimation, slideLeftAnimation;
-    private RelativeLayout slideRightLayout;
+    private RelativeLayout slideMenuLayout;
     private boolean isMenuOpen = false;
     InputListener activityCommander;
 
@@ -37,7 +37,7 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
         slideLeftAnimation = AnimationUtils.loadAnimation(getContext().getApplicationContext(),
                 R.anim.slide_left);
 
-        slideRightLayout = view.findViewById(R.id.slide_down_layout);
+        slideMenuLayout = view.findViewById(R.id.board_slide_menu_layout);
 
         hintButton = view.findViewById(R.id.hint_button);
         hintButton.setOnClickListener(this);
@@ -87,20 +87,20 @@ public class BoardMenuFragment extends Fragment implements View.OnClickListener,
     }
 
     public void openMenu(){
-        slideRightLayout.setVisibility(View.VISIBLE);
-        slideRightLayout.startAnimation(slideRightAnimation);
+        slideMenuLayout.setVisibility(View.VISIBLE);
+        slideMenuLayout.startAnimation(slideRightAnimation);
         slideMenuButton.animate().rotation(180).setDuration(500);
 
         isMenuOpen = true;
     }
 
     public void closeMenu(){
-        slideRightLayout.startAnimation(slideLeftAnimation);
+        slideMenuLayout.startAnimation(slideLeftAnimation);
         slideMenuButton.animate().rotation(-0).setDuration(500);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                slideRightLayout.setVisibility(View.INVISIBLE);
+                slideMenuLayout.setVisibility(View.INVISIBLE);
             }}, 200);
 
         isMenuOpen = false;
