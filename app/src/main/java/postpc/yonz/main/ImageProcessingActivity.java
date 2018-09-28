@@ -20,8 +20,6 @@ import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -33,11 +31,12 @@ public class ImageProcessingActivity extends Activity {
     private static final int GALLERY_IMAGE = 2;
     private File photoFile;
     private String imgSrc;
+    private PuzzleScanner puzzleScanner;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.image_processing_layout);
+        setContentView(R.layout.activity_imageprocessing);
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -145,11 +144,9 @@ public class ImageProcessingActivity extends Activity {
 
     private void processImage(Bitmap imageBitmap) {
         try {
-            setImage(imageBitmap);
-            ImageView imageView = findViewById(R.id.PreviewImageView);
-            PuzzleScanner puzzleScanner = new PuzzleScanner(imageBitmap, this.getApplicationContext());
-            String[] methodChain = new String[]{"getThreshold", "getLargestBlob", "getHoughLines", "getOutLine", "extractPuzzle"};
-            UpdateImageTask updateImageTask = new UpdateImageTask(imageView, puzzleScanner, methodChain, this);
+            //setImage(imageBitmap);
+            puzzleScanner = new PuzzleScanner(imageBitmap, this.getApplicationContext());
+            UpdateImageTask updateImageTask = new UpdateImageTask();
             updateImageTask.execute();
 
         } catch (Exception ex) {
@@ -157,11 +154,11 @@ public class ImageProcessingActivity extends Activity {
         }
     }
 
-    private void setImage(Bitmap imageBitmap) throws Exception {
-        ImageView imageView = findViewById(R.id.PreviewImageView);
-        imageView.setImageBitmap(imageBitmap);
-        imageView.invalidate();
-    }
+//    private void setImage(Bitmap imageBitmap) throws Exception {
+//        ImageView imageView = findViewById(R.id.PreviewImageView);
+//        imageView.setImageBitmap(imageBitmap);
+//        imageView.invalidate();
+//    }
 
     private void cancelAndReturnToMainActivity() {
         Intent returnIntent = new Intent();
@@ -179,87 +176,28 @@ public class ImageProcessingActivity extends Activity {
         finish();
     }
 
-    private static class UpdateImageTask extends AsyncTask<Void, Void, Bitmap> {
+    private class UpdateImageTask extends AsyncTask<Void, Void, Void> {
 
-        private final WeakReference<ImageView> imageViewReference;
-        private WeakReference<PuzzleScanner> puzzleScannerReference;
-        private String[] methodChain;
-        private WeakReference<ImageProcessingActivity> activityReference;
-
-        UpdateImageTask(ImageView imageView, PuzzleScanner puzzleScanner, String[] methodChain, ImageProcessingActivity activity) {
-            this.imageViewReference = new WeakReference<>(imageView);
-            this.puzzleScannerReference = new WeakReference<>(puzzleScanner);
-            this.activityReference = new WeakReference<>(activity);
-            this.methodChain = methodChain;
-        }
+        private String[][] puzzle;
 
         @Override
-        protected Bitmap doInBackground(Void... voids) {
-            Bitmap result = null;
-            Method[] allMethods = puzzleScannerReference.get().getClass().getDeclaredMethods();
-            for (Method m : allMethods) {
-                if (m.getName().equals(methodChain[0])) {
-                    try {
-                        result = (Bitmap) m.invoke(puzzleScannerReference.get());
-                    } catch (Exception ex) {
-                        Log.e(null, "error calling method", ex);
-                    }
-                    break;
-                }
-            }
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            updateImage(bitmap);
-            String[] newMethodChain = getNewMethodChain(methodChain);
-            if (noMoreMethodsInChain(newMethodChain)) {
-                parsePuzzleAndControlBackToMainActivity();
-                return;
-            }
-            executeNextStepInMethodChain(newMethodChain);
-        }
-
-        private void parsePuzzleAndControlBackToMainActivity() {
-            String[][] puzzle = null;
+        protected Void doInBackground(Void... voids) {
             try {
-                puzzle = puzzleScannerReference.get().getPuzzle();
-            } catch (Exception ex) {
-                Log.e(null, "error calling getting puzzle", ex);
+                puzzle = puzzleScanner.getPuzzle();
             }
-            activityReference.get().passPuzzleAndReturnToMainActivity(puzzle);
-        }
-
-        private boolean noMoreMethodsInChain(String[] newMethodChain) {
-            return newMethodChain.length == 0;
-        }
-
-        private void updateImage(Bitmap bitmap) {
-            if (bitmap != null) {
-                final ImageView imageView = imageViewReference.get();
-                if (imageView != null) {
-                    imageView.setImageBitmap(bitmap);
-                    imageView.invalidate();
-                }
+            catch (Exception e) {
+                Log.e("ImageProcessingActivity", "error getting puzzle");
             }
+            return null;
         }
 
-        private void executeNextStepInMethodChain(String[] newMethodChain) {
-            UpdateImageTask chainTask = new UpdateImageTask(this.imageViewReference.get(),
-                    this.puzzleScannerReference.get(), newMethodChain, this.activityReference.get());
-            chainTask.execute();
-        }
-
-        private String[] getNewMethodChain(String[] methodChain) {
-            if (methodChain.length < 2)
-                return new String[0];
-
-            String[] newMethodChain = new String[methodChain.length - 1];
-            System.arraycopy(methodChain, 1, newMethodChain, 0, methodChain.length - 1);
-            return newMethodChain;
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            passPuzzleAndReturnToMainActivity(puzzle);
         }
     }
+
+
 }
 
 

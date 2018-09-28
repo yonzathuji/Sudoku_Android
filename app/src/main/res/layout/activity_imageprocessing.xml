@@ -6,16 +6,15 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/textView3"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/PreviewImageView"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_above="@+id/progressBar"
+        android:layout_centerHorizontal="true"
         android:gravity="center"
         android:text="Processing..."
         android:textColor="@android:color/black"
-        android:textSize="30sp"
-        android:id="@+id/textView3" />
+        android:textSize="30sp" />
 
 
     <ProgressBar
@@ -23,15 +22,8 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="94dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/textView3"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         android:gravity="center" />
 
-    <ImageView
-        android:id="@+id/PreviewImageView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/progressBar"
-        android:scaleType="center" />
 </RelativeLayout>

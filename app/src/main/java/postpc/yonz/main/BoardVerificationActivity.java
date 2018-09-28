@@ -77,19 +77,19 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
     public void completeVerification() {
         String dialogMessage;
         if (PuzzlesManager.isVerificationComplete()) {
-            dialogMessage = "Complete Verification?";
+            dialogMessage = "";
         }
         else {
-            dialogMessage = "There are still tiles with uncertain values. Continuing will reset them";
+            dialogMessage = "There are still tiles with uncertain values. Continuing will reset them.";
         }
 
         final Context context = this;
 
         new AlertDialog.Builder(this)
-                .setTitle("Complete Verification")
+                .setTitle("Complete Verification?")
                 .setMessage(dialogMessage)
                 .setIcon(R.drawable.icon_verified)
-                .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int whichButton) {
                         PuzzlesManager.completeVerification();

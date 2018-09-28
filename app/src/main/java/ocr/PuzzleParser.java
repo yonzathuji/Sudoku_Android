@@ -1,7 +1,6 @@
 package ocr;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 
@@ -16,11 +15,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import static ocr.Constants.BLACK;
 import static ocr.Constants.GREY;
@@ -32,7 +27,6 @@ class PuzzleParser {
 
     private static final int NUMBER_BORDER = 5;
     private static final String TESS_LANG = "eng";
-
 
     private static final int PUZZLE_SIZE = 9;
 
@@ -50,24 +44,52 @@ class PuzzleParser {
 
         tessBaseAPI = new TessBaseAPI();
         tessBaseAPI.init(context.getExternalFilesDir(null).getAbsolutePath(), TESS_LANG);
-         tessBaseAPI.setVariable("tessedit_char_whitelist", "0123456789");
+        tessBaseAPI.setVariable("tessedit_char_whitelist", "0123456789");
     }
 
-    Mat getMatForPosition(int x, int y) {
+    String[][] getPuzzle() throws PuzzleNotFoundException {
+        String[][] result = new String[9][9];
+
+        for (int y = 0; y < 9; y++) {
+            for (int x = 0; x < 9; x++) {
+                result[y][x] = getNumberForPosition(x, y);
+            }
+        }
+        return result;
+    }
+
+    private String getNumberForPosition(int x, int y) throws PuzzleNotFoundException {
+        Mat squareMat = getMatForPosition(x, y);
+
+        Bitmap squareBmp = Bitmap.createBitmap(squareMat.cols(), squareMat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(squareMat, squareBmp);
+
+        tessBaseAPI.setImage(squareBmp);
+
+        String textFound = tessBaseAPI.getUTF8Text();
+
+        if (textFound == null || textFound.isEmpty())
+            return "0";
+
+        Integer result;
+
+        try {
+            result = Integer.parseInt(textFound);
+        } catch (Exception ex) {
+            return "?";
+        }
+
+        if (result < 1 || result > 9)
+            return "?";
+
+        return String.valueOf(result);
+    }
+
+    private Mat getMatForPosition(int x, int y) {
 
         Mat numberMat = extractNumberMatFromPuzzle(x, y);
         numberMat = cleanUpNumberMat(numberMat);
         return numberMat;
-    }
-
-    private Mat cleanUpNumberMat(Mat numberMat) {
-        Mat cleanedUpMat = numberMat.clone();
-        Imgproc.threshold(cleanedUpMat, cleanedUpMat, THRESHOLD, 255, THRESH_BINARY);
-        cleanedUpMat = findLargestBlob(cleanedUpMat);
-        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_DILATE, new Size(5, 5));
-        Imgproc.dilate(cleanedUpMat, cleanedUpMat, kernel);
-        return cleanedUpMat;
-
     }
 
     @NonNull
@@ -96,50 +118,20 @@ class PuzzleParser {
         return new Mat(puzzleMat, rect);
     }
 
-    String getNumberForPosition(int x, int y) throws PuzzleNotFoundException {
-        Mat squareMat = getMatForPosition(x, y);
+    private Mat cleanUpNumberMat(Mat numberMat) {
+        Mat cleanedUpMat = numberMat.clone();
+        Imgproc.threshold(cleanedUpMat, cleanedUpMat, THRESHOLD, 255, THRESH_BINARY);
+        cleanedUpMat = findLargestBlob(cleanedUpMat);
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_DILATE, new Size(5, 5));
+        Imgproc.dilate(cleanedUpMat, cleanedUpMat, kernel);
+        return cleanedUpMat;
 
-        Bitmap squareBmp = Bitmap.createBitmap(squareMat.cols(), squareMat.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(squareMat, squareBmp);
-
-        tessBaseAPI.setImage(squareBmp);
-
-        String textFound = tessBaseAPI.getUTF8Text();
-
-        if (textFound == null || textFound.isEmpty())
-            return "0";
-
-        Integer result;
-
-        try {
-            result = Integer.parseInt(textFound);
-        } catch (Exception ex) {
-            return "?";
-        }
-
-        if (result < 1 || result > 9)
-            return "?";
-
-        return String.valueOf(result);
     }
 
-    String[][] getPuzzle() throws PuzzleNotFoundException {
-        String[][] result = new String[9][9];
-
-        for (int y = 0; y < 9; y++) {
-            for (int x = 0; x < 9; x++) {
-                result[y][x] = getNumberForPosition(x, y);
-            }
-        }
-        return result;
-    }
-
-
-    private Mat findLargestBlob(Mat thresholdMat) {
+     private Mat findLargestBlob(Mat thresholdMat) {
         Mat largestBlobMat = thresholdMat.clone();
         int height = largestBlobMat.height();
         int width = largestBlobMat.width();
-
 
         Point maxBlobOrigin = new Point(0, 0);
 
@@ -166,7 +158,6 @@ class PuzzleParser {
         }
         double largestSize = colourLargestBlobWhite(largestBlobMat, height, width, maxBlobOrigin);
         eraseBlobIfLessThanOnePercentOfArea(largestBlobMat, height, width, maxBlobOrigin, largestSize);
-
 
         return largestBlobMat;
     }

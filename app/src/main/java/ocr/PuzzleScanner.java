@@ -1,5 +1,6 @@
 package ocr;
 
+
 import android.content.Context;
 import android.graphics.Bitmap;
 
@@ -13,76 +14,30 @@ import org.opencv.imgproc.Imgproc;
 import java.io.IOException;
 
 public class PuzzleScanner {
-    private final Mat originalMat;
-    private final Context context;
 
-    private PuzzleFinder puzzleFinder;
-    private PuzzleExtractor puzzleExtractor;
-    private PuzzleParser puzzleParser;
+    private final Context context;
+    private final Mat originalMat;
 
     public PuzzleScanner(Bitmap bitmap, Context context) throws Exception {
-        initOpencv();
-
+        initOpenCV();
         this.context = context;
-        this.originalMat = convertAndResizeBitmap(bitmap);
+        originalMat = convertAndResizeBitmap(bitmap);
     }
 
-    private PuzzleFinder getPuzzleFinder() {
-        if (puzzleFinder == null) {
-            puzzleFinder = new PuzzleFinder(originalMat);
-        }
-        return puzzleFinder;
+    public String[][] getPuzzle() throws IOException, PuzzleNotFoundException{
+        PuzzleFinder puzzleFinder = new PuzzleFinder(originalMat);
+        PuzzleExtractor puzzleExtractor = new PuzzleExtractor(puzzleFinder.getThresholdMat(),
+                puzzleFinder.getLargestBlobMat(), puzzleFinder.getPuzzleOutLine());
+        PuzzleParser puzzleParser = new PuzzleParser(puzzleExtractor.getExtractedPuzzleMat(), context);
+
+        return puzzleParser.getPuzzle();
+
     }
 
-    private PuzzleExtractor getPuzzleExtractor() throws PuzzleNotFoundException {
-        if (puzzleExtractor == null) {
-            PuzzleFinder finder = getPuzzleFinder();
-            puzzleExtractor = new PuzzleExtractor(finder.getThresholdMat(), finder.getLargestBlobMat(), finder.findOutLine());
-        }
-        return puzzleExtractor;
-    }
-
-    private PuzzleParser getPuzzleParser() throws IOException, PuzzleNotFoundException {
-        if (puzzleParser == null) {
-            PuzzleExtractor extractor = getPuzzleExtractor();
-            puzzleParser = new PuzzleParser(extractor.getExtractedPuzzleMat(), context);
-        }
-        return puzzleParser;
-    }
-
-    private void initOpencv() throws Exception {
+    private void initOpenCV() throws Exception {
         if (!OpenCVLoader.initDebug()) {
             throw new Exception("OpenCv did not init properly");
         }
-    }
-
-    public Bitmap getThreshold() {
-        Mat thresholdMat = getPuzzleFinder().getThresholdMat();
-        return convertMatToBitMap(thresholdMat);
-    }
-
-    public Bitmap getLargestBlob() {
-        Mat largestBlobMat = getPuzzleFinder().getLargestBlobMat();
-        return convertMatToBitMap(largestBlobMat);
-    }
-
-    public Bitmap getHoughLines() {
-        Mat houghLinesMat = getPuzzleFinder().getHoughLinesMat();
-        return convertMatToBitMap(houghLinesMat);
-    }
-
-    public Bitmap getOutLine() throws PuzzleNotFoundException {
-        Mat outLineMat = getPuzzleFinder().getOutLineMat();
-        return convertMatToBitMap(outLineMat);
-    }
-
-    public Bitmap extractPuzzle() throws PuzzleNotFoundException {
-        Mat extractedPuzzleMat = getPuzzleExtractor().getExtractedPuzzleMat();
-        return convertMatToBitMap(extractedPuzzleMat);
-    }
-
-    public String[][] getPuzzle() throws IOException, PuzzleNotFoundException {
-        return getPuzzleParser().getPuzzle();
     }
 
     private Mat convertAndResizeBitmap(Bitmap bitmap) {
@@ -90,11 +45,5 @@ public class PuzzleScanner {
         Utils.bitmapToMat(bitmap, mat);
         Imgproc.resize(mat, mat, new Size(1080, 1440));
         return mat;
-    }
-
-    private Bitmap convertMatToBitMap(Mat matToConvert) {
-        Bitmap bitmap = Bitmap.createBitmap(matToConvert.cols(), matToConvert.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(matToConvert, bitmap);
-        return bitmap;
     }
 }

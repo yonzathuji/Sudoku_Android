@@ -54,7 +54,7 @@ public class BoardView extends View {
 
     private boolean isSolved = false;
 
-    public BoardView(Context context, AttributeSet attrs) throws PuzzleNotFoundException{
+    public BoardView(Context context, AttributeSet attrs) throws PuzzleNotFoundException {
         super(context, attrs);
 
         setFocusable(true);

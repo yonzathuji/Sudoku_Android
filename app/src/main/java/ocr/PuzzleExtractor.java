@@ -13,7 +13,6 @@ import java.util.List;
 
 import static ocr.Constants.BLACK;
 
-
 class PuzzleExtractor {
 
     private Mat thresholdMat;
@@ -26,22 +25,21 @@ class PuzzleExtractor {
         this.thresholdMat = thresholdMat;
         this.largestBlobMat = largestBlobMat;
         this.puzzleOutline = puzzleOutLine;
+
+        createExtractedPuzzleMat();
     }
 
     Mat getExtractedPuzzleMat() {
-        if (extractedPuzzleMat == null)
-            generateExtractedPuzzleMat();
-
         return extractedPuzzleMat;
     }
 
-    private void generateExtractedPuzzleMat() {
+    private void createExtractedPuzzleMat() {
         extractedPuzzleMat = thresholdMat.clone();
-        RemovePuzzleOutline();
-        CorrectPerspective();
+        removePuzzleOutline();
+        correctPerspective();
     }
 
-    private void CorrectPerspective() {
+    private void correctPerspective() {
         double size = puzzleOutline.getSize();
 
         Mat outputMat = new Mat((int) size, (int) size, CvType.CV_8U);
@@ -75,7 +73,7 @@ class PuzzleExtractor {
     }
 
 
-    private void RemovePuzzleOutline() {
+    private void removePuzzleOutline() {
         int height = thresholdMat.height();
         int width = thresholdMat.width();
         for (int y = 0; y < height; y++) {

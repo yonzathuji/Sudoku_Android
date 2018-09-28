@@ -1,5 +1,6 @@
 package ocr;
 
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -15,138 +16,36 @@ import static ocr.Constants.BLACK;
 import static ocr.Constants.GREY;
 import static ocr.Constants.WHITE;
 import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_MEAN_C;
-import static org.opencv.imgproc.Imgproc.MARKER_TILTED_CROSS;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
+
 class PuzzleFinder {
 
     private Mat originalMat;
     private Mat greyMat;
     private Mat thresholdMat;
     private Mat largestBlobMat;
-    private Mat houghLinesMat;
-    private Mat outLineMat;
 
     PuzzleFinder(Mat mat) {
         originalMat = mat;
-    }
-
-    Mat getGreyMat() {
-        if (greyMat == null) {
-            generateGreyMat();
-        }
-        return greyMat;
-    }
-
-    private void generateGreyMat() {
-        greyMat = originalMat.clone();
-        Imgproc.cvtColor(originalMat, greyMat, Imgproc.COLOR_RGB2GRAY);
+        createGreyMat();
+        createThresholdMat();
+        createLargestBlobMat();
     }
 
     Mat getThresholdMat() {
-        if (thresholdMat == null) {
-            generateThresholdMat();
-        }
         return thresholdMat;
     }
 
-    private void generateThresholdMat() {
-        thresholdMat = getGreyMat().clone();
-        Imgproc.adaptiveThreshold(thresholdMat, thresholdMat, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 7, 5);
-        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ERODE, new Size(2, 2));
-        Imgproc.erode(thresholdMat, thresholdMat, kernel);
-        Mat kernelDil = Imgproc.getStructuringElement(Imgproc.MORPH_DILATE, new Size(2, 2));
-        Imgproc.dilate(thresholdMat, thresholdMat, kernelDil);
-        Core.bitwise_not(thresholdMat, thresholdMat);
-    }
-
     Mat getLargestBlobMat() {
-        if (largestBlobMat == null) {
-            generateLargestBlobMat();
-        }
         return largestBlobMat;
     }
 
-    private void generateLargestBlobMat() {
-        largestBlobMat = getThresholdMat().clone();
-        int height = largestBlobMat.height();
-        int width = largestBlobMat.width();
-
-
-        Point maxBlobOrigin = new Point(0, 0);
-
-        int maxBlobSize = 0;
-        Mat greyMask = new Mat(height + 2, width + 2, CvType.CV_8U, new Scalar(0, 0, 0));
-        Mat blackMask = new Mat(height + 2, width + 2, CvType.CV_8U, new Scalar(0, 0, 0));
-        for (int y = 0; y < height; y++) {
-            Mat row = largestBlobMat.row(y);
-            for (int x = 0; x < width; x++) {
-                double[] value = row.get(0, x);
-                Point currentPoint = new Point(x, y);
-
-                if (value[0] > Constants.THRESHOLD) {
-                    int blobSize = Imgproc.floodFill(largestBlobMat, greyMask, currentPoint, GREY);
-                    if (blobSize > maxBlobSize) {
-                        Imgproc.floodFill(largestBlobMat, blackMask, maxBlobOrigin, BLACK);
-                        maxBlobOrigin = currentPoint;
-                        maxBlobSize = blobSize;
-                    } else {
-                        Imgproc.floodFill(largestBlobMat, blackMask, currentPoint, BLACK);
-                    }
-                }
-            }
-        }
-        Mat largeBlobMask = new Mat(height + 2, width + 2, CvType.CV_8U, BLACK);
-        Imgproc.floodFill(largestBlobMat, largeBlobMask, maxBlobOrigin, WHITE);
-
-    }
-
-    Mat getHoughLinesMat() {
-        if (houghLinesMat == null)
-            generateHoughLinesMat();
-        return houghLinesMat;
-    }
-
-    private void generateHoughLinesMat() {
-
-        houghLinesMat = getLargestBlobMat().clone();
-
-        List<Line> houghLines = getHoughLines();
-        for (Line line : houghLines) {
-            Imgproc.line(houghLinesMat, line.origin, line.destination, GREY);
-        }
-    }
-
-    private List<Line> getHoughLines() {
-        Mat linesMat = getLargestBlobMat().clone();
-        Mat largestBlobMat = getLargestBlobMat();
-        int width = largestBlobMat.width();
-        int height = largestBlobMat.height();
-
-        //Need to think about the threshold as getting this correct is very important!
-        Imgproc.HoughLines(largestBlobMat, linesMat, (double) 1, Math.PI / 180, 400);
-
-        //The Hough transform returns a series of lines in Polar format this is returned in the
-        //form of a Mat where each row is a vector where row[0] is rho and row[1] is theta
-        //See http://docs.opencv.org/2.4/doc/tutorials/imgproc/imgtrans/hough_lines/hough_lines.html
-        //and http://stackoverflow.com/questions/7925698/android-opencv-drawing-hough-lines/7975315#7975315
-        List<Line> houghLines = new ArrayList<>();
-        int lines = linesMat.rows();
-        for (int x = 0; x < lines; x++) {
-            double[] vec = linesMat.get(x, 0);
-            Vector vector = new Vector(vec[0], vec[1]);
-            Line line = new Line(vector, height, width);
-
-            houghLines.add(line);
-        }
-        return houghLines;
-    }
-
-    PuzzleOutLine findOutLine() throws PuzzleNotFoundException {
+    PuzzleOutLine getPuzzleOutLine() throws PuzzleNotFoundException {
 
         PuzzleOutLine location = new PuzzleOutLine();
 
-        int height = getLargestBlobMat().height();
-        int width = getLargestBlobMat().width();
+        int height = largestBlobMat.height();
+        int width = largestBlobMat.width();
 
         int countHorizontalLines = 0;
         int countVerticalLines = 0;
@@ -220,29 +119,71 @@ class PuzzleFinder {
         return location;
     }
 
-
-    Mat getOutLineMat() throws PuzzleNotFoundException {
-        if (outLineMat == null)
-
-            generateOutlineMat();
-        return outLineMat;
+    private void createGreyMat() {
+        greyMat = originalMat.clone();
+        Imgproc.cvtColor(originalMat, greyMat, Imgproc.COLOR_RGB2GRAY);
     }
 
-    private void generateOutlineMat() throws PuzzleNotFoundException {
-        outLineMat = getGreyMat().clone();
-
-        PuzzleOutLine location = findOutLine();
-
-        Imgproc.drawMarker(outLineMat, location.topLeft, GREY, MARKER_TILTED_CROSS, 30, 10, 8);
-        Imgproc.drawMarker(outLineMat, location.topRight, GREY, MARKER_TILTED_CROSS, 30, 10, 8);
-        Imgproc.drawMarker(outLineMat, location.bottomLeft, GREY, MARKER_TILTED_CROSS, 30, 10, 8);
-        Imgproc.drawMarker(outLineMat, location.bottomRight, GREY, MARKER_TILTED_CROSS, 30, 10, 8);
-
-        Imgproc.line(outLineMat, location.top.origin, location.top.destination, GREY);
-        Imgproc.line(outLineMat, location.bottom.origin, location.bottom.destination, Constants.DARK_GREY);
-        Imgproc.line(outLineMat, location.left.origin, location.left.destination, GREY);
-        Imgproc.line(outLineMat, location.right.origin, location.right.destination, Constants.DARK_GREY);
+    private void createThresholdMat() {
+        thresholdMat = greyMat.clone();
+        Imgproc.adaptiveThreshold(thresholdMat, thresholdMat, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 7, 5);
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ERODE, new Size(2, 2));
+        Imgproc.erode(thresholdMat, thresholdMat, kernel);
+        Mat kernelDil = Imgproc.getStructuringElement(Imgproc.MORPH_DILATE, new Size(2, 2));
+        Imgproc.dilate(thresholdMat, thresholdMat, kernelDil);
+        Core.bitwise_not(thresholdMat, thresholdMat);
     }
 
+    private void createLargestBlobMat() {
+        largestBlobMat =thresholdMat.clone();
+        int height = largestBlobMat.height();
+        int width = largestBlobMat.width();
+
+        Point maxBlobOrigin = new Point(0, 0);
+
+        int maxBlobSize = 0;
+        Mat greyMask = new Mat(height + 2, width + 2, CvType.CV_8U, new Scalar(0, 0, 0));
+        Mat blackMask = new Mat(height + 2, width + 2, CvType.CV_8U, new Scalar(0, 0, 0));
+        for (int y = 0; y < height; y++) {
+            Mat row = largestBlobMat.row(y);
+            for (int x = 0; x < width; x++) {
+                double[] value = row.get(0, x);
+                Point currentPoint = new Point(x, y);
+
+                if (value[0] > Constants.THRESHOLD) {
+                    int blobSize = Imgproc.floodFill(largestBlobMat, greyMask, currentPoint, GREY);
+                    if (blobSize > maxBlobSize) {
+                        Imgproc.floodFill(largestBlobMat, blackMask, maxBlobOrigin, BLACK);
+                        maxBlobOrigin = currentPoint;
+                        maxBlobSize = blobSize;
+                    } else {
+                        Imgproc.floodFill(largestBlobMat, blackMask, currentPoint, BLACK);
+                    }
+                }
+            }
+        }
+        Mat largeBlobMask = new Mat(height + 2, width + 2, CvType.CV_8U, BLACK);
+        Imgproc.floodFill(largestBlobMat, largeBlobMask, maxBlobOrigin, WHITE);
+    }
+
+    private List<Line> getHoughLines() {
+        Mat linesMat = getLargestBlobMat().clone();
+        Mat largestBlobMat = getLargestBlobMat();
+        int width = largestBlobMat.width();
+        int height = largestBlobMat.height();
+
+        Imgproc.HoughLines(largestBlobMat, linesMat, (double) 1, Math.PI / 180, 400);
+
+        List<Line> houghLines = new ArrayList<>();
+        int lines = linesMat.rows();
+        for (int x = 0; x < lines; x++) {
+            double[] vec = linesMat.get(x, 0);
+            Vector vector = new Vector(vec[0], vec[1]);
+            Line line = new Line(vector, height, width);
+
+            houghLines.add(line);
+        }
+        return houghLines;
+    }
 
 }
