@@ -19,7 +19,11 @@ import android.widget.ImageView;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -100,13 +104,60 @@ public class ImageProcessingActivity extends Activity {
         );
     }
 
-    public String getPathFromUri(Uri uri) {
-        String[] projection = { MediaStore.Images.Media.DATA };
-        Cursor cursor = managedQuery(uri, projection, null, null, null);
-        startManagingCursor(cursor);
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        return cursor.getString(column_index);
+    private String getImagePathFromInputStreamUri(Uri uri) {
+        InputStream inputStream = null;
+        String filePath = null;
+
+        if (uri.getAuthority() != null) {
+            try {
+                inputStream = getContentResolver().openInputStream(uri); // context needed
+                File photoFile = createTemporalFileFrom(inputStream);
+
+                filePath = photoFile.getPath();
+
+            } catch (FileNotFoundException e) {
+                // log
+            } catch (IOException e) {
+                // log
+            }finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return filePath;
+    }
+
+    private File createTemporalFileFrom(InputStream inputStream) throws IOException {
+        File targetFile = null;
+
+        if (inputStream != null) {
+            int read;
+            byte[] buffer = new byte[8 * 1024];
+
+            targetFile = createTemporalFile();
+            OutputStream outputStream = new FileOutputStream(targetFile);
+
+            while ((read = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, read);
+            }
+            outputStream.flush();
+
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return targetFile;
+    }
+
+    private File createTemporalFile() {
+        return new File(getExternalCacheDir(), "tempFile.jpg"); // context needed
     }
 
     private Bitmap getCameraImageFromStorage() {
@@ -127,7 +178,7 @@ public class ImageProcessingActivity extends Activity {
                 preformCrop();
             }
             else if (requestCode == GALLERY_IMAGE) {
-                photoFile = new File(getPathFromUri(data.getData()));
+                photoFile = new File(getImagePathFromInputStreamUri(data.getData()));
                 preformCrop();
             }
             else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE){
@@ -144,7 +195,6 @@ public class ImageProcessingActivity extends Activity {
 
     private void processImage(Bitmap imageBitmap) {
         try {
-            //setImage(imageBitmap);
             puzzleScanner = new PuzzleScanner(imageBitmap, this.getApplicationContext());
             UpdateImageTask updateImageTask = new UpdateImageTask();
             updateImageTask.execute();
@@ -153,12 +203,6 @@ public class ImageProcessingActivity extends Activity {
             Log.e(null, "Error extracting puzzle", ex);
         }
     }
-
-//    private void setImage(Bitmap imageBitmap) throws Exception {
-//        ImageView imageView = findViewById(R.id.PreviewImageView);
-//        imageView.setImageBitmap(imageBitmap);
-//        imageView.invalidate();
-//    }
 
     private void cancelAndReturnToMainActivity() {
         Intent returnIntent = new Intent();

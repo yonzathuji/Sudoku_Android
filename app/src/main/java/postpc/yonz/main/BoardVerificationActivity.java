@@ -56,7 +56,9 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null) {
             GameAction action = boardFragment.deleteReadOnlyValue();
-            PuzzlesManager.editVerificationFile(action);
+            if (action != null) {
+                PuzzlesManager.editVerificationFile(action);
+            }
         }
     }
 
@@ -66,7 +68,9 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
                 findFragmentById(R.id.board_fragment);
         if(boardFragment != null) {
             GameAction action = boardFragment.insertReadOnlyValue(value);
-            PuzzlesManager.editVerificationFile(action);
+            if (action != null) {
+                PuzzlesManager.editVerificationFile(action);
+            }
         }
     }
 
@@ -77,7 +81,7 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
     public void completeVerification() {
         String dialogMessage;
         if (PuzzlesManager.isVerificationComplete()) {
-            dialogMessage = "";
+            dialogMessage = null;
         }
         else {
             dialogMessage = "There are still tiles with uncertain values. Continuing will reset them.";
@@ -88,7 +92,7 @@ public class BoardVerificationActivity extends AppCompatActivity implements Boar
         new AlertDialog.Builder(this)
                 .setTitle("Complete Verification?")
                 .setMessage(dialogMessage)
-                .setIcon(R.drawable.icon_verified)
+                //.setIcon(R.drawable.icon_verified)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int whichButton) {
