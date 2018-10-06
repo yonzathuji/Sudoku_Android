@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        checkFirstRun();
+
         slideUpAnimation = AnimationUtils.loadAnimation(this.getApplicationContext(),
                 R.anim.slide_up);
         slideDownAnimation = AnimationUtils.loadAnimation(this.getApplicationContext(),
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.new_game_button).setOnClickListener(this);
         findViewById(R.id.gallery_button).setOnClickListener(this);
         findViewById(R.id.camera_button).setOnClickListener(this);
+        findViewById(R.id.about_button).setOnClickListener(this);
         continueButton.setOnClickListener(this);
 
         if (PuzzlesManager.isPlayingPuzzleFileExists()){
@@ -78,6 +81,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 imgSrc = "GALLERY";
                 startImageProcessingActivity();
                 break;
+
+            case R.id.about_button:
+                displayAboutDialog();
+                break;
         }
     }
 
@@ -102,7 +109,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = new Intent(this, ImageProcessingActivity.class);
         intent.putExtra("IMG_SRC", imgSrc);
         closeMenu();
+        continueButton.setVisibility(View.GONE);
         startActivityForResult(intent, 1);
+    }
+
+    private void checkFirstRun() {
+        boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("isFirstRun", true);
+        if (isFirstRun){
+            displayAboutDialog();
+            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("isFirstRun", false)
+                    .apply();
+        }
+    }
+
+    private void displayAboutDialog() {
+        new AlertDialog.Builder(this).
+                setTitle("Welcome to Sudoku - Capture & Solve")
+                .setMessage("Start a new puzzle by clicking the New Game button to create it with your device's camera or by importing from your gallery.\n\n" +
+                        "Important Notice: Please use photos of boards where all the borders are seen.\n\n" +
+                        "Developed by Jonathan Meerson\nDesigned by Roey Kelner\n\nHUJI Post-PC course 2018")
+                .show();
     }
 
     @Override

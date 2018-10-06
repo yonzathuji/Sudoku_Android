@@ -135,7 +135,7 @@ class PuzzleFinder {
     }
 
     private void createLargestBlobMat() {
-        largestBlobMat =thresholdMat.clone();
+        largestBlobMat = thresholdMat.clone();
         int height = largestBlobMat.height();
         int width = largestBlobMat.width();
 

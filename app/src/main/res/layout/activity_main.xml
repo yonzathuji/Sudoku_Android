@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -29,13 +30,22 @@
         android:textSize="30sp"
         android:background="@drawable/input_button_bg"
         android:text="  Continue  "
-        android:visibility="gone"/>
+        android:visibility="invisible"/>
 
     <gui.MainMenuSlideMenu
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/new_game_button"
         android:layout_centerHorizontal="true" />
+
+    <ImageButton
+        android:id="@+id/about_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/white"
+        app:srcCompat="@drawable/icon_about" />
 
 
 </RelativeLayout>
